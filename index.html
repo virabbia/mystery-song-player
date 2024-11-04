@@ -3,26 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Play Mystery Song on Spotify</title>
+    <title>Spotify Mystery Song Player</title>
 </head>
 <body>
-    <h1>Play the Mystery Song!</h1>
-    <p>Click the button below to open the song in Spotify.</p>
-    <button onclick="openSpotify()">Play on Spotify</button>
-
-    <script>
-        function openSpotify() {
-            // Retrieve the track URI from the query parameter
-            const urlParams = new URLSearchParams(window.location.search);
-            const trackUri = urlParams.get('track');
-            
-            if (trackUri) {
-                // Redirect to the Spotify URI to open the song in the Spotify app
-                window.location.href = trackUri;
-            } else {
-                alert("No track specified.");
-            }
-        }
-    </script>
+    <h1>Play a Mystery Song!</h1>
+    <button id="play-button">Play Song</button>
+    <script src="script.js"></script>
 </body>
 </html>
