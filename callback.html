@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Callback</title>
+</head>
+<body>
+    <p>Redirecting...</p>
+    <script>
+        // Check if there's a token in the URL fragment
+        const hash = window.location.hash;
+        if (hash.includes('access_token')) {
+            // Redirect to the main page, preserving the token in the URL
+            window.location.href = "/" + hash;
+        } else {
+            // If no token, redirect to the main page without causing a loop
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>
