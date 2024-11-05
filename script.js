@@ -20,7 +20,7 @@ document.getElementById("play-button").addEventListener("click", () => {
 });
 
 function redirectToSpotifyAuth() {
-    const clientId = "YOUR_CLIENT_ID";  // Replace with your Spotify client ID
+    const clientId = "0e507d976bac454da727e5da965c22fb";  // Replace with your Spotify client ID
     const redirectUri = "https://virabbia.github.io/mystery-song-player/callback.html";  // Set correctly in Spotify Developer
     const scopes = "user-modify-playback-state"; // Required scope to control playback
 
