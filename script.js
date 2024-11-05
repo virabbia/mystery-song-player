@@ -7,11 +7,10 @@ const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => 
     acc[parts[0]] = decodeURIComponent(parts[1]);
     return acc;
 }, {});
-window.location.hash = ''; // Clear the hash to clean up the URL
 
 let accessToken = hash.access_token;
 
-// Function to get the track URI from the URL
+// Function to get the track URI from the URL query parameter
 function getTrackUri() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('track');
