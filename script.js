@@ -32,9 +32,9 @@ const trackUri = getTrackUri();
 // If no access token, redirect to Spotify authorization with track parameter preserved
 if (!accessToken) {
     console.log("No access token found, redirecting to Spotify authorization...");
-    // Append the track parameter to the redirect URI
-    const redirectUri = `https://virabbia.github.io/mystery-song-player/callback.html?track=${encodeURIComponent(trackUri)}`;
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-modify-playback-state%20user-read-playback-state`;
+    // Append the track parameter to the redirect URI without additional encoding
+    const redirectUri = `https://virabbia.github.io/mystery-song-player/callback.html?track=${trackUri}`;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=user-modify-playback-state%20user-read-playback-state`;
     window.location.href = authUrl;
 } else {
     console.log("Access token found. Track URI:", trackUri);
