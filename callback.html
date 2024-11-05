@@ -5,13 +5,13 @@
     <title>Callback</title>
 </head>
 <body>
+    <p>Redirecting...</p>
     <script>
-        // Extract the token from URL fragment
+        // Check if there's an access token in the URL fragment
         const hash = window.location.hash;
-        const search = window.location.search;
         if (hash.includes('access_token')) {
-            // Redirect back to the main page with the token and track parameter
-            const newUrl = `https://virabbia.github.io/mystery-song-player/${search}${hash}`;
+            // Redirect to the main page with the token in the URL
+            const newUrl = `https://virabbia.github.io/mystery-song-player/${hash}`;
             window.location.href = newUrl;
         } else {
             // If no token, redirect back to the main page without causing a loop
