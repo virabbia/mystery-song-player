@@ -26,3 +26,19 @@ function getTokenFromUrl() {
     return null;
 }
 
+// Main: Check if we have a token or need to authenticate
+const trackUri = getTrackUri();
+const token = getTokenFromUrl();
+
+if (!token) {
+    if (trackUri) {
+        console.log("No token found, redirecting to authenticate with track URI:", trackUri);
+        authenticate(trackUri);
+    } else {
+        console.error("No track URI provided in the URL.");
+    }
+} else {
+    console.log("Token found:", token);
+    console.log("Track URI retrieved:", trackUri);
+    // You can use this token to call Spotify's API and play the track
+}
