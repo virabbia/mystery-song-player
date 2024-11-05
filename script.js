@@ -17,13 +17,3 @@ function getTokenFromUrl() {
     }
     return null;
 }
-
-// Main: Check if we have a token or need to authenticate
-const token = getTokenFromUrl();
-if (!token) {
-    console.log("No token found, redirecting to authenticate...");
-    authenticate();
-} else {
-    console.log("Token found:", token);
-    // You can use this token to call Spotify's API
-}
