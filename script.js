@@ -22,12 +22,14 @@ if (accessToken) {
 // Function to get the track URI from the URL query parameter
 function getTrackUri() {
     console.log("Checking URL for track parameter...");
-    console.log("Full URL:", window.location.href);
     const urlParams = new URLSearchParams(window.location.search);
     const trackUri = urlParams.get('track');
-    console.log("Track URI from getTrackUri function:", trackUri); // Debug log to check if the track URI is captured correctly
+    console.log("Track URI from URL:", trackUri); // Debug log to check if the track URI is captured correctly
     return trackUri;
 }
+
+// Retrieve the track URI and store it in a variable
+const trackUri = getTrackUri();
 
 if (!accessToken) {
     console.log("No access token found, redirecting to Spotify authorization...");
@@ -38,12 +40,6 @@ if (!accessToken) {
     console.log("Access token found. Setting up Play Song button...");
     // Spotify API code to play song once authenticated
     document.getElementById('play-button').addEventListener('click', () => {
-        playSong();
-    });
-
-    function playSong() {
-        const trackUri = getTrackUri(); // Get the track URI from the URL
-
         if (trackUri) {
             console.log("Playing track:", trackUri); // Debug log to confirm track URI before attempting to play
             fetch('https://api.spotify.com/v1/me/player/play', {
@@ -61,5 +57,5 @@ if (!accessToken) {
             console.error("No track URI provided in the URL.");
             alert("No track URI provided in the URL.");
         }
-    }
+    });
 }
