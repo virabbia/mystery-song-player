@@ -1,81 +1,55 @@
-// Replace with your actual Client ID and Redirect URI
-const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
-const REDIRECT_URI = 'https://virabbia.github.io/mystery-song-player/callback.html';
-
-// Function to get track URI from the URL
-function getTrackUri() {
-    console.log("Running getTrackUri function...");
-    const urlParams = new URLSearchParams(window.location.search);
-    const trackUri = urlParams.get('track');
-    if (trackUri) {
-        console.log("Track URI found:", trackUri);
+document.getElementById("play-button").addEventListener("click", () => {
+    // Step 1: Check if we already have an access token in the URL
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = urlParams.get("access_token");
+    
+    if (!accessToken) {
+        console.log("No access token found. Redirecting to Spotify login...");
+        redirectToSpotifyAuth();
     } else {
-        console.log("No track URI found in the URL.");
+        console.log("Access token found. Proceeding to play track.");
+        const trackUri = new URLSearchParams(window.location.search).get("track");
+        
+        if (trackUri) {
+            console.log("Track URI found:", trackUri);
+            playTrack(accessToken, trackUri);
+        } else {
+            console.log("No track URI found in the URL.");
+        }
     }
-    return trackUri;
-}
+});
 
-/// Authentication function to get Spotify access token
-function authenticate(trackUri) {
-    console.log("Running authenticate function...");
-    console.log("Track URI passed to authenticate:", trackUri);
+function redirectToSpotifyAuth() {
+    const clientId = "YOUR_CLIENT_ID";  // Replace with your Spotify client ID
+    const redirectUri = "https://virabbia.github.io/mystery-song-player/callback.html";  // Set correctly in Spotify Developer
+    const scopes = "user-modify-playback-state"; // Required scope to control playback
 
-    // Construct the redirect URI with track parameter without extra encoding
-    const redirectUriWithTrack = `${REDIRECT_URI}?track=${trackUri}`;
-    console.log("Redirect URI with track parameter (single-encoded):", redirectUriWithTrack);
-
-    // Construct the authentication URL without re-encoding the redirect URI
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${redirectUriWithTrack}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
-    console.log("Authentication URL:", authUrl);
-
-    // Redirect to Spotify for authentication
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=token`;
     window.location.href = authUrl;
 }
 
-
-
-// Extract token from URL after authentication
-function getTokenFromUrl() {
-    console.log("Running getTokenFromUrl function...");
-    const hash = window.location.hash;
-    if (hash) {
-        console.log("Hash found in URL:", hash);
-        const params = new URLSearchParams(hash.substring(1));
-        const token = params.get('access_token');
-        if (token) {
-            console.log("Access token extracted:", token);
+function playTrack(accessToken, trackUri) {
+    // Step 2: Make a request to the Spotify API to play the track
+    fetch("https://api.spotify.com/v1/me/player/play", {
+        method: "PUT",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ uris: [trackUri] })
+    })
+    .then(response => {
+        if (response.status === 204) {
+            console.log("Track is playing successfully.");
         } else {
-            console.log("No access token found in the hash.");
+            console.log("Failed to play track:", response.status);
+            if (response.status === 401) {
+                console.log("Access token may have expired. Redirecting to Spotify login...");
+                redirectToSpotifyAuth();
+            }
         }
-        return token;
-    } else {
-        console.log("No hash found in the URL.");
-    }
-    return null;
-}
-
-// Main: Check if we have a token or need to authenticate
-console.log("Starting main flow...");
-
-// Retrieve the track URI from the URL
-const trackUri = getTrackUri();
-console.log("Result of getTrackUri:", trackUri);
-
-// Retrieve the token from the URL fragment (hash)
-const token = getTokenFromUrl();
-console.log("Result of getTokenFromUrl:", token);
-
-if (!token) {
-    console.log("No token found.");
-    if (trackUri) {
-        console.log("Track URI is available, proceeding to authenticate...");
-        authenticate(trackUri);
-    } else {
-        console.error("No track URI provided in the URL. Cannot authenticate.");
-    }
-} else {
-    console.log("Token found:", token);
-    console.log("Track URI retrieved:", trackUri);
-    // This is where you would proceed with making API calls to Spotify to play the track
-    console.log("Ready to make API calls with token and track URI.");
+    })
+    .catch(error => {
+        console.log("Error occurred while trying to play track:", error);
+    });
 }
