@@ -1,7 +1,7 @@
 const clientId = '0e507d976bac454da727e5da965c22fb'; // Replace with your Spotify app client ID
 const redirectUri = 'https://virabbia.github.io/mystery-song-player/callback.html';
 
-// Parse the URL hash for the access token
+// Parse the URL fragment for the access token
 const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => {
     const parts = item.split('=');
     acc[parts[0]] = decodeURIComponent(parts[1]);
@@ -9,6 +9,11 @@ const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => 
 }, {});
 
 let accessToken = hash.access_token;
+
+// Clear the access token from the URL fragment for a clean URL
+if (accessToken) {
+    window.location.hash = ''; // Clears the fragment so it’s not visible in the URL
+}
 
 // Function to get the track URI from the URL query parameter
 function getTrackUri() {
