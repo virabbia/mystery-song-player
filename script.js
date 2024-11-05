@@ -3,7 +3,7 @@ const redirectUri = 'https://virabbia.github.io/mystery-song-player/callback.htm
 
 console.log("Starting script...");
 
-// Parse the URL hash for the access token
+// Parse the URL fragment for the access token
 const hash = window.location.hash.substring(1).split('&').reduce((acc, item) => {
     const parts = item.split('=');
     acc[parts[0]] = decodeURIComponent(parts[1]);
@@ -23,7 +23,7 @@ if (accessToken) {
 function getTrackUri() {
     const urlParams = new URLSearchParams(window.location.search);
     const trackUri = urlParams.get('track');
-    console.log("Track URI from URL:", trackUri); // Debug log to check if the track URI is captured correctly
+    console.log("Track URI from getTrackUri function:", trackUri); // Debug log to check if the track URI is captured correctly
     return trackUri;
 }
 
