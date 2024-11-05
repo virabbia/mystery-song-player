@@ -15,22 +15,23 @@ function getTrackUri() {
     return trackUri;
 }
 
-// Authentication function to get Spotify access token
+/// Authentication function to get Spotify access token
 function authenticate(trackUri) {
     console.log("Running authenticate function...");
     console.log("Track URI passed to authenticate:", trackUri);
 
-    // Manually construct the redirect URI without double-encoding the track parameter
+    // Construct the redirect URI with track parameter without extra encoding
     const redirectUriWithTrack = `${REDIRECT_URI}?track=${trackUri}`;
     console.log("Redirect URI with track parameter (single-encoded):", redirectUriWithTrack);
 
-    // Now encode the entire redirect URI only once
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUriWithTrack)}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
+    // Construct the authentication URL without re-encoding the redirect URI
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${redirectUriWithTrack}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
     console.log("Authentication URL:", authUrl);
 
     // Redirect to Spotify for authentication
     window.location.href = authUrl;
 }
+
 
 
 // Extract token from URL after authentication
