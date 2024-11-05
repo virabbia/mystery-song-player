@@ -21,6 +21,8 @@ if (accessToken) {
 
 // Function to get the track URI from the URL query parameter
 function getTrackUri() {
+    console.log("Checking URL for track parameter...");
+    console.log("Full URL:", window.location.href);
     const urlParams = new URLSearchParams(window.location.search);
     const trackUri = urlParams.get('track');
     console.log("Track URI from getTrackUri function:", trackUri); // Debug log to check if the track URI is captured correctly
