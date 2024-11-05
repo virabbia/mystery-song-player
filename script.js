@@ -7,13 +7,3 @@ function authenticate() {
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
     window.location.href = authUrl;
 }
-
-// Extract token from URL after authentication
-function getTokenFromUrl() {
-    const hash = window.location.hash;
-    if (hash) {
-        const params = new URLSearchParams(hash.substring(1));
-        return params.get('access_token');
-    }
-    return null;
-}
