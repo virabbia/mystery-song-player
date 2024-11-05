@@ -7,3 +7,11 @@ function getTrackUri() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('track');
 }
+
+// Authentication function to get Spotify access token
+function authenticate(trackUri) {
+    // Include track URI as a query parameter in the redirect URI
+    const redirectUriWithTrack = `${REDIRECT_URI}?track=${encodeURIComponent(trackUri)}`;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUriWithTrack)}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
+    window.location.href = authUrl;
+}
