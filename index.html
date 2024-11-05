@@ -2,21 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Callback</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Mystery Song Player</title>
 </head>
 <body>
-    <p>Redirecting...</p>
-    <script>
-        // Check if there's an access token in the URL fragment
-        const hash = window.location.hash;
-        if (hash.includes('access_token')) {
-            // Redirect to the main page with the token in the URL
-            const newUrl = `https://virabbia.github.io/mystery-song-player/${hash}`;
-            window.location.href = newUrl;
-        } else {
-            // If no token, redirect back to the main page without causing a loop
-            window.location.href = "https://virabbia.github.io/mystery-song-player/";
-        }
-    </script>
+    <h1>Play a Mystery Song!</h1>
+    <button id="play-button">Play Song</button>
+    <script src="script.js"></script>
 </body>
 </html>
