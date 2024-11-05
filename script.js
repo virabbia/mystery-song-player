@@ -18,7 +18,9 @@ if (accessToken) {
 // Function to get the track URI from the URL query parameter
 function getTrackUri() {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('track');
+    const trackUri = urlParams.get('track');
+    console.log("Track URI from URL:", trackUri); // Debug log to check if the track URI is captured correctly
+    return trackUri;
 }
 
 if (!accessToken) {
@@ -35,6 +37,7 @@ if (!accessToken) {
         const trackUri = getTrackUri(); // Get the track URI from the URL
 
         if (trackUri) {
+            console.log("Playing track:", trackUri); // Debug log to confirm track URI before attempting to play
             fetch('https://api.spotify.com/v1/me/player/play', {
                 method: 'PUT',
                 body: JSON.stringify({ uris: [trackUri] }), // Use the track URI from the URL
