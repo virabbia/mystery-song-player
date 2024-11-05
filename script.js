@@ -20,16 +20,18 @@ function authenticate(trackUri) {
     console.log("Running authenticate function...");
     console.log("Track URI passed to authenticate:", trackUri);
 
-    // Include track URI as a query parameter in the redirect URI
-    const redirectUriWithTrack = `${REDIRECT_URI}?track=${encodeURIComponent(trackUri)}`;
-    console.log("Redirect URI with track parameter:", redirectUriWithTrack);
+    // Manually construct the redirect URI without double-encoding the track parameter
+    const redirectUriWithTrack = `${REDIRECT_URI}?track=${trackUri}`;
+    console.log("Redirect URI with track parameter (single-encoded):", redirectUriWithTrack);
 
+    // Now encode the entire redirect URI only once
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUriWithTrack)}&scope=streaming%20user-read-playback-state%20user-modify-playback-state`;
     console.log("Authentication URL:", authUrl);
 
     // Redirect to Spotify for authentication
     window.location.href = authUrl;
 }
+
 
 // Extract token from URL after authentication
 function getTokenFromUrl() {
