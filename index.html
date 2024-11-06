@@ -33,12 +33,15 @@
             position: relative;
             width: 80%;
             max-width: 600px;
-            text-align: center;
+            text-align: left;
             background: #ffffff;
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-            transform: translateX(-80px); /* Shift content to the left more to avoid overlap with Viki */
+        }
+        
+        .content-wrapper h2, .content-wrapper p, .play-button {
+            margin-left: 80px;
         }
         
         .play-button {
@@ -47,11 +50,12 @@
             color: #ffffff;
             text-decoration: none;
             font-weight: 600;
-            padding: 15px 30px;
+            padding: 10px 20px;
             border-radius: 30px;
             box-shadow: 0px 4px 10px rgba(255, 99, 99, 0.4);
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
         .play-button:hover {
