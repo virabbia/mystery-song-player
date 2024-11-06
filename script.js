@@ -1,7 +1,7 @@
 document.getElementById("play-button").addEventListener("click", () => {
     console.log("Starting main flow...");
     
-    const trackUri = getTrackUri(); // Extract track URI from URL
+    const trackUri = getTrackUri(); // Extract track URI from URL or hash
     if (trackUri) {
         console.log("Track URI found:", trackUri);
         // Store the track URI in localStorage before redirecting for authentication
@@ -24,12 +24,35 @@ function authenticate() {
     window.location.href = authUrl; // Redirect to Spotify for user login
 }
 
+// Helper function to retrieve track URI from the URL query or hash
 function getTrackUri() {
     console.log("Running getTrackUri function...");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const trackUri = urlParams.get("track");
+    // First try to get the track URI from the query parameter
+    let trackUri = new URLSearchParams(window.location.search).get("track");
 
-    console.log("Result of getTrackUri:", trackUri ? trackUri : "null");
+    if (trackUri) {
+        console.log("Track URI found in query parameters:", trackUri);
+        return trackUri;
+    }
+
+    // If not found in query, try to get it from the hash
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    trackUri = hashParams.get("track");
+
+    console.log("Track URI found in hash:", trackUri ? trackUri : "null");
     return trackUri;
+}
+
+function getTokenFromUrl() {
+    console.log("Running getTokenFromUrl function...");
+    
+    const hash = window.location.hash.substring(1);
+    console.log("Current hash:", hash);
+    
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get("access_token");
+    
+    console.log("Result of getTokenFromUrl:", accessToken ? accessToken : "null");
+    return accessToken;
 }
