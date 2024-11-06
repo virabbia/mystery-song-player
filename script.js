@@ -17,7 +17,6 @@ document.getElementById("play-button").addEventListener("click", () => {
     }
 });
 
-// Helper function to retrieve track URI from the URL
 function getTrackUri() {
     console.log("Running getTrackUri function...");
     
@@ -29,7 +28,6 @@ function getTrackUri() {
     return trackUri;
 }
 
-// Helper function to retrieve the access token from URL fragment
 function getTokenFromUrl() {
     console.log("Running getTokenFromUrl function...");
     const hash = window.location.hash;
@@ -48,7 +46,7 @@ function authenticate(trackUri) {
     const scopes = "streaming user-read-playback-state user-modify-playback-state";
     
     // Spotify authentication URL
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}`;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${encodeURIComponent(trackUri)}`;
     console.log("Authentication URL:", authUrl);
     
     window.location.href = authUrl;
