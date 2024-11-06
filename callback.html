@@ -7,19 +7,14 @@
 <body>
     <p>Redirecting...</p>
     <script>
-        // Retrieve access token and track parameter
+        // Extract token from URL fragment
         const hash = window.location.hash;
-        const urlParams = new URLSearchParams(window.location.search);
-        const track = urlParams.get("track");
-
         if (hash.includes('access_token')) {
-            // If access token is present, construct URL with both token and track
-            const accessToken = new URLSearchParams(hash.substring(1)).get("access_token");
-            const newUrl = `https://virabbia.github.io/mystery-song-player/#access_token=${accessToken}&track=${encodeURIComponent(track)}`;
-            window.location.href = newUrl;
+            // Redirect to main page with token in URL
+            window.location.href = "/" + hash;
         } else {
-            // Redirect back to the main page if no token (to avoid a loop)
-            window.location.href = "https://virabbia.github.io/mystery-song-player/";
+            // If no token, redirect back to main page
+            window.location.href = "/";
         }
     </script>
 </body>
