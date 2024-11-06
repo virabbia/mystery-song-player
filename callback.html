@@ -9,7 +9,10 @@
     <script>
         console.log("Starting callback script...");
 
-        // Step 1: Extract access token from the URL fragment
+        // Step 1: Log the full current URL
+        console.log("Current URL in callback:", window.location.href);
+
+        // Step 2: Extract access token from the URL fragment
         const hash = window.location.hash;
         console.log("Current hash:", hash);
 
@@ -17,12 +20,12 @@
         const accessToken = params.get("access_token");
         console.log("Extracted access token:", accessToken);
 
-        // Step 2: Extract the track URI from the initial URL query parameters
+        // Step 3: Extract the track URI from the state parameter
         const queryParams = new URLSearchParams(window.location.search);
-        const trackUri = queryParams.get("track");
-        console.log("Extracted track URI from query parameters:", trackUri);
+        const trackUri = queryParams.get("state");
+        console.log("Extracted track URI from state parameter:", trackUri);
 
-        // Step 3: Check if both access token and track URI are available
+        // Step 4: Check if both access token and track URI are available
         if (accessToken && trackUri) {
             console.log("Both access token and track URI are available. Proceeding with redirection.");
             // Redirect to index.html with access token and track in the hash
@@ -31,7 +34,7 @@
             window.location.href = newUrl;
         } else {
             console.log("Access token or track URI not found. Redirecting back to the main page.");
-            // If something is missing, redirect back to the main page
+            // If something is missing, redirect back to main page to start again
             window.location.href = "https://virabbia.github.io/mystery-song-player/";
         }
     </script>
