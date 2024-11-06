@@ -1,30 +1,14 @@
 document.getElementById("play-button").addEventListener("click", () => {
     console.log("Starting main flow...");
-    const trackUri = getTrackUri();
-    const accessToken = getTokenFromUrl();
-
-    if (accessToken) {
-        console.log("Access token found. Proceeding to play track.");
-        if (trackUri) {
-            console.log("Track URI found:", trackUri);
-            playTrack(accessToken, trackUri);
-        } else {
-            console.log("No track URI found. Attempting to retrieve from local storage...");
-            const savedTrackUri = localStorage.getItem("trackUri");
-            if (savedTrackUri) {
-                console.log("Track URI retrieved from local storage:", savedTrackUri);
-                playTrack(accessToken, savedTrackUri);
-            } else {
-                console.log("No track URI available.");
-            }
-        }
+    
+    const trackUri = getTrackUri(); // Extract track URI from URL
+    if (trackUri) {
+        console.log("Track URI found:", trackUri);
+        // Store the track URI in localStorage before redirecting for authentication
+        localStorage.setItem("trackUri", trackUri);
+        authenticate(); // Start the authentication flow
     } else {
-        console.log("No token found. Redirecting to Spotify authentication...");
-        if (trackUri) {
-            console.log("Saving track URI to local storage before authentication...");
-            localStorage.setItem("trackUri", trackUri);
-        }
-        authenticate();
+        console.log("No track URI found. Cannot proceed without a track URI.");
     }
 });
 
@@ -37,7 +21,7 @@ function authenticate() {
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
     console.log("Authentication URL:", authUrl);
 
-    window.location.href = authUrl; // Redirect to Spotify authentication
+    window.location.href = authUrl; // Redirect to Spotify for user login
 }
 
 function getTrackUri() {

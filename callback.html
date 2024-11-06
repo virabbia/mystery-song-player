@@ -9,10 +9,7 @@
     <script>
         console.log("Starting callback script...");
 
-        // Step 1: Log the full current URL
-        console.log("Current URL in callback:", window.location.href);
-
-        // Step 2: Extract access token from the URL fragment
+        // Step 1: Extract access token from the URL fragment
         const hash = window.location.hash;
         console.log("Current hash:", hash);
 
@@ -20,16 +17,20 @@
         const accessToken = params.get("access_token");
         console.log("Extracted access token:", accessToken);
 
-        // Step 3: Check if access token is available and redirect to index.html
-        if (accessToken) {
-            console.log("Access token is available. Proceeding with redirection.");
-            // Redirect to index.html with access token in the hash
-            const newUrl = `https://virabbia.github.io/mystery-song-player/#access_token=${accessToken}`;
+        // Step 2: Retrieve the track URI from local storage
+        const trackUri = localStorage.getItem("trackUri");
+        console.log("Retrieved track URI from local storage:", trackUri);
+
+        // Step 3: Check if both access token and track URI are available
+        if (accessToken && trackUri) {
+            console.log("Both access token and track URI are available. Proceeding with redirection.");
+            // Redirect to index.html with access token and track in the hash
+            const newUrl = `https://virabbia.github.io/mystery-song-player/#access_token=${accessToken}&track=${encodeURIComponent(trackUri)}`;
             console.log("Redirecting to new URL:", newUrl);
             window.location.href = newUrl;
         } else {
-            console.log("Access token not found. Redirecting back to the main page.");
-            // If access token is missing, redirect back to main page to start again
+            console.log("Access token or track URI not found. Redirecting back to the main page.");
+            // If something is missing, redirect back to main page to start again
             window.location.href = "https://virabbia.github.io/mystery-song-player/";
         }
     </script>
