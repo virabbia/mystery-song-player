@@ -1,21 +1,28 @@
 document.getElementById("play-button").addEventListener("click", () => {
     console.log("Starting main flow...");
     
-    const trackUri = getTrackUri(); // Extract track URI from URL hash
-    const accessToken = getTokenFromUrl(); // Extract access token from URL hash
-    
-    if (accessToken) {
-        console.log("Access token found:", accessToken);
-        if (trackUri) {
-            console.log("Track URI found:", trackUri);
-            playTrack(accessToken, trackUri);
-        } else {
-            console.log("No track URI found.");
-        }
+    const trackUri = getTrackUri(); // Extract track URI from URL
+    if (trackUri) {
+        console.log("Track URI found:", trackUri);
+        // Store the track URI in localStorage before redirecting for authentication
+        localStorage.setItem("trackUri", trackUri);
+        authenticate(); // Start the authentication flow
     } else {
-        console.log("No access token found. Please authenticate.");
+        console.log("No track URI found. Cannot proceed without a track URI.");
     }
 });
+
+function authenticate() {
+    const clientId = "0e507d976bac454da727e5da965c22fb"; // Replace with your Spotify client ID
+    const redirectUri = "https://virabbia.github.io/mystery-song-player/callback.html"; // Registered in Spotify Developer Dashboard
+    const scopes = "streaming user-read-playback-state user-modify-playback-state";
+
+    // Spotify authentication URL
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    console.log("Authentication URL:", authUrl);
+
+    window.location.href = authUrl; // Redirect to Spotify for user login
+}
 
 // Helper function to retrieve track URI from the URL hash
 function getTrackUri() {
@@ -65,3 +72,4 @@ function playTrack(accessToken, trackUri) {
         console.log("Error occurred while trying to play track:", error);
     });
 }
+
