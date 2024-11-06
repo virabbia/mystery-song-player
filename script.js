@@ -3,37 +3,23 @@ document.getElementById("play-button").addEventListener("click", () => {
     const trackUri = getTrackUri();
     const accessToken = getTokenFromUrl();
     
-    if (accessToken) {
-        console.log("Access token found. Proceeding to play track.");
-        if (trackUri) {
-            console.log("Track URI found:", trackUri);
-            playTrack(accessToken, trackUri);
-        } else {
-            console.log("No track URI found. Attempting to retrieve from local storage...");
-            const savedTrackUri = localStorage.getItem("trackUri");
-            if (savedTrackUri) {
-                console.log("Track URI retrieved from local storage:", savedTrackUri);
-                playTrack(accessToken, savedTrackUri);
-            } else {
-                console.log("No track URI available.");
-            }
-        }
+    if (accessToken && trackUri) {
+        console.log("Access token and Track URI found. Proceeding to play track.");
+        console.log("Track URI found:", trackUri);
+        playTrack(accessToken, trackUri);
     } else {
-        console.log("No token found. Redirecting to Spotify authentication...");
-        if (trackUri) {
-            console.log("Saving track URI to local storage before authentication...");
-            localStorage.setItem("trackUri", trackUri);
-        }
+        console.log("No token or track URI found. Redirecting to Spotify authentication...");
         authenticate();
     }
 });
 
-// Helper function to retrieve track URI from the URL
+// Helper function to retrieve track URI from the URL fragment
 function getTrackUri() {
     console.log("Running getTrackUri function...");
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const trackUri = urlParams.get("track");
+    const hash = window.location.hash;
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const trackUri = hashParams.get("track");
     
     console.log("Result of getTrackUri:", trackUri ? trackUri : "null");
     return trackUri;
@@ -45,8 +31,8 @@ function getTokenFromUrl() {
     const hash = window.location.hash;
     console.log("Current hash:", hash);
     
-    const tokenParams = new URLSearchParams(hash.substring(1));
-    const accessToken = tokenParams.get("access_token");
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const accessToken = hashParams.get("access_token");
     
     console.log("Result of getTokenFromUrl:", accessToken ? accessToken : "null");
     return accessToken;
