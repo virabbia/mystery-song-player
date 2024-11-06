@@ -128,44 +128,6 @@
             <div class="bar"></div>
         </div>
     </div>
-    <script>
-        document.getElementById("play-button").addEventListener("click", () => {
-            console.log("Starting playback...");
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const accessToken = params.get("access_token");
-            const trackUri = params.get("track");
-
-            if (accessToken && trackUri) {
-                console.log("Access token and track URI found. Proceeding to play track.");
-                playTrack(accessToken, trackUri);
-            } else {
-                console.log("Missing access token or track URI. Cannot play track.");
-            }
-        });
-
-        function playTrack(accessToken, trackUri) {
-            console.log("Attempting to play track...");
-
-            fetch("https://api.spotify.com/v1/me/player/play", {
-                method: "PUT",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ uris: [trackUri] })
-            })
-            .then(response => {
-                if (response.status === 204) {
-                    console.log("Track is playing successfully.");
-                } else {
-                    console.log("Failed to play track:", response.status);
-                }
-            })
-            .catch(error => {
-                console.log("Error occurred while trying to play track:", error);
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
