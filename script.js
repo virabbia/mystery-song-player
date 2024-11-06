@@ -20,11 +20,10 @@ document.getElementById("play-button").addEventListener("click", () => {
 // Helper function to retrieve track URI from the URL
 function getTrackUri() {
     console.log("Running getTrackUri function...");
-    const url = window.location.href;
-    console.log("Current URL:", url);
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const trackUri = urlParams.get("track");
+    const hash = window.location.hash;
+    const hashParams = new URLSearchParams(hash.substring(1));
+    const trackUri = hashParams.get("track");
     
     console.log("Result of getTrackUri:", trackUri ? trackUri : "null");
     return trackUri;
