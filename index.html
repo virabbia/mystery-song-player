@@ -94,7 +94,7 @@
             bottom: 20px;
             right: 20px;
             width: 150px;
-            animation: dance 2s infinite ease-in-out;
+            animation: flip-dance 1s infinite steps(2);
         }
         
         @keyframes bounce {
@@ -102,7 +102,7 @@
             100% { height: 100px; }
         }
         
-        @keyframes dance {
+        @keyframes flip-dance {
             0%, 100% { transform: scaleX(1); }
             50% { transform: scaleX(-1); }
         }
