@@ -94,7 +94,7 @@
             bottom: 20px;
             right: 20px;
             width: 150px;
-            animation: flip-dance 1s infinite steps(2);
+            animation: flip-dance 0.5s infinite steps(1);
         }
         
         @keyframes bounce {
@@ -103,8 +103,16 @@
         }
         
         @keyframes flip-dance {
-            0%, 100% { transform: scaleX(1); }
-            50% { transform: scaleX(-1); }
+            0% { transform: scaleX(1); }
+            100% { transform: scaleX(-1); }
+        }
+
+        .music-sticker {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            transform: rotate(-15deg);
         }
     </style>
 </head>
@@ -123,6 +131,7 @@
         </div>
     </div>
     <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png" alt="Dancing Viki" class="dancing-viki">
+    <img src="https://i.imgur.com/sclxWey.png" alt="Music Sticker" class="music-sticker">
     <script src="script.js"></script>
 </body>
 </html>
