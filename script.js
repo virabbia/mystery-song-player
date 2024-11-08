@@ -6,7 +6,15 @@ document.getElementById("play-button").addEventListener("click", () => {
 
     if (accessToken && trackUri) {
         console.log("Access token and track URI found. Proceeding to play track.");
-        playTrack(accessToken, trackUri);
+        getActiveDevice(accessToken)
+            .then(deviceId => {
+                if (deviceId) {
+                    playTrack(accessToken, trackUri, deviceId);
+                } else {
+                    console.log("No active device found. Please open Spotify on one of your devices.");
+                }
+            })
+            .catch(error => console.error("Error while getting active device:", error));
     } else if (trackUri) {
         console.log("Track URI found:", trackUri);
         // Store the track URI in localStorage before redirecting for authentication
@@ -63,10 +71,42 @@ function authenticate() {
     window.location.href = authUrl; // Redirect to Spotify for user login
 }
 
-function playTrack(accessToken, trackUri) {
+function getActiveDevice(accessToken) {
+    console.log("Retrieving active device...");
+    
+    return fetch("https://api.spotify.com/v1/me/player/devices", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.devices && data.devices.length > 0) {
+            const activeDevice = data.devices.find(device => device.is_active) || data.devices[0];
+            if (activeDevice) {
+                console.log("Active device found:", activeDevice.id);
+                return activeDevice.id;
+            } else {
+                console.log("No active device found.");
+                return null;
+            }
+        } else {
+            console.log("No devices available.");
+            return null;
+        }
+    })
+    .catch(error => {
+        console.error("Error occurred while getting active devices:", error);
+        return null;
+    });
+}
+
+function playTrack(accessToken, trackUri, deviceId) {
     console.log("Attempting to play track...");
 
-    fetch("https://api.spotify.com/v1/me/player/play", {
+    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
         method: "PUT",
         headers: {
             "Authorization": `Bearer ${accessToken}`,
