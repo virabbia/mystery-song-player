@@ -84,7 +84,7 @@ function getActiveDevice(accessToken) {
     .then(response => response.json())
     .then(data => {
         if (data.devices && data.devices.length > 0) {
-            const activeDevice = data.devices.find(device => device.is_active) || data.devices[0];
+            const activeDevice = data.devices.find(device => device.is_active && device.is_restricted === false) || data.devices[0];
             if (activeDevice) {
                 console.log("Active device found:", activeDevice.id);
                 return activeDevice.id;
@@ -117,6 +117,8 @@ function playTrack(accessToken, trackUri, deviceId) {
     .then(response => {
         if (response.status === 204) {
             console.log("Track is playing successfully.");
+        } else if (response.status === 404) {
+            console.error("Failed to play track. No active Spotify session. Please make sure a Spotify device is available and playing.");
         } else {
             console.log("Failed to play track:", response.status);
         }
