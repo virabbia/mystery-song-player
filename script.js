@@ -65,7 +65,7 @@ function authenticate() {
     const scopes = "streaming user-read-playback-state user-modify-playback-state";
 
     // Spotify authentication URL
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
     console.log("Authentication URL:", authUrl);
 
     window.location.href = authUrl; // Redirect to Spotify for user login
