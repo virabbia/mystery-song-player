@@ -1,4 +1,4 @@
-// Updated script to handle GitHub page reuse by closing existing tab before opening a new one
+// Original script updated to automatically start playback after authentication
 let githubPageWindow = null;
 let openTabs = {}; // Object to track opened tabs by base URL
 
@@ -75,6 +75,25 @@ function authenticate() {
     window.location.href = authUrl; // Redirect to Spotify for user login
 }
 
+window.addEventListener("load", () => {
+    console.log("Page loaded, checking for authentication...");
+    const accessToken = getTokenFromUrl();
+    const trackUri = localStorage.getItem("trackUri");
+
+    if (accessToken && trackUri) {
+        console.log("Access token and track URI found after authentication. Proceeding to play track.");
+        getActiveDevice(accessToken)
+            .then(deviceId => {
+                if (deviceId) {
+                    playTrack(accessToken, trackUri, deviceId);
+                } else {
+                    console.log("No active device found. Please open Spotify on one of your devices.");
+                }
+            })
+            .catch(error => console.error("Error while getting active device:", error));
+    }
+});
+
 function getActiveDevice(accessToken) {
     console.log("Retrieving active device...");
     
@@ -130,14 +149,4 @@ function playTrack(accessToken, trackUri, deviceId) {
     .catch(error => {
         console.log("Error occurred while trying to play track:", error);
     });
-}
-
-function openGitHubPage(url) {
-    const baseUrl = new URL(url).origin; // Extract base URL (e.g., https://github.com)
-    if (openTabs[baseUrl] && !openTabs[baseUrl].closed) {
-        // If a GitHub page for this base URL is already open, close it
-        openTabs[baseUrl].close();
-    }
-    // Open a new tab/window and store the reference
-    openTabs[baseUrl] = window.open(url, '_blank');
 }
