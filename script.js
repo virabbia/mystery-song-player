@@ -1,3 +1,5 @@
+let githubPageWindow = null;
+
 document.getElementById("play-button").addEventListener("click", () => {
     console.log("Starting main flow...");
     
@@ -126,4 +128,14 @@ function playTrack(accessToken, trackUri, deviceId) {
     .catch(error => {
         console.log("Error occurred while trying to play track:", error);
     });
+}
+
+function openGitHubPage(url) {
+    if (githubPageWindow && !githubPageWindow.closed) {
+        // If the GitHub page is already open, just focus on it
+        githubPageWindow.focus();
+    } else {
+        // If it's not open, open it in a new tab/window
+        githubPageWindow = window.open(url, '_blank');
+    }
 }
