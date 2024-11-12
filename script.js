@@ -1,4 +1,4 @@
-// Original script updated to automatically start playback after authentication
+// Original script updated to automatically start playback after authentication through Spotify app
 let githubPageWindow = null;
 let openTabs = {}; // Object to track opened tabs by base URL
 
@@ -68,11 +68,11 @@ function authenticate() {
     const redirectUri = "https://virabbia.github.io/mystery-song-player/callback.html"; // Registered in Spotify Developer Dashboard
     const scopes = "streaming user-read-playback-state user-modify-playback-state";
 
-    // Spotify authentication URL
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-    console.log("Authentication URL:", authUrl);
+    // Spotify authentication URL for using Spotify app instead of web login
+    const authUrl = `spotify:authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    console.log("Authentication URL (via Spotify app):", authUrl);
 
-    window.location.href = authUrl; // Redirect to Spotify for user login
+    window.location.href = authUrl; // Redirect to Spotify app for user login
 }
 
 window.addEventListener("load", () => {
