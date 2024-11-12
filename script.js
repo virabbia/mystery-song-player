@@ -1,4 +1,4 @@
-// Updated script to handle GitHub page reuse with tracking by GitHub base URL
+// Updated script to handle GitHub page reuse by closing existing tab before opening a new one
 let githubPageWindow = null;
 let openTabs = {}; // Object to track opened tabs by base URL
 
@@ -135,10 +135,9 @@ function playTrack(accessToken, trackUri, deviceId) {
 function openGitHubPage(url) {
     const baseUrl = new URL(url).origin; // Extract base URL (e.g., https://github.com)
     if (openTabs[baseUrl] && !openTabs[baseUrl].closed) {
-        // If a GitHub page for this base URL is already open, just focus on it
-        openTabs[baseUrl].focus();
-    } else {
-        // If it's not open, open it in a new tab/window and store the reference
-        openTabs[baseUrl] = window.open(url, '_blank');
+        // If a GitHub page for this base URL is already open, close it
+        openTabs[baseUrl].close();
     }
+    // Open a new tab/window and store the reference
+    openTabs[baseUrl] = window.open(url, '_blank');
 }
