@@ -1,7 +1,3 @@
-// Original script updated to automatically start playback after authentication through Spotify app
-let githubPageWindow = null;
-let openTabs = {}; // Object to track opened tabs by base URL
-
 document.getElementById("play-button").addEventListener("click", () => {
     console.log("Starting main flow...");
     
@@ -68,31 +64,12 @@ function authenticate() {
     const redirectUri = "https://virabbia.github.io/mystery-song-player/callback.html"; // Registered in Spotify Developer Dashboard
     const scopes = "streaming user-read-playback-state user-modify-playback-state";
 
-    // Spotify authentication URL for using Spotify app instead of web login
-    const authUrl = `spotify:authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-    console.log("Authentication URL (via Spotify app):", authUrl);
+    // Spotify authentication URL
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
+    console.log("Authentication URL:", authUrl);
 
-    window.location.href = authUrl; // Redirect to Spotify app for user login
+    window.location.href = authUrl; // Redirect to Spotify for user login
 }
-
-window.addEventListener("load", () => {
-    console.log("Page loaded, checking for authentication...");
-    const accessToken = getTokenFromUrl();
-    const trackUri = localStorage.getItem("trackUri");
-
-    if (accessToken && trackUri) {
-        console.log("Access token and track URI found after authentication. Proceeding to play track.");
-        getActiveDevice(accessToken)
-            .then(deviceId => {
-                if (deviceId) {
-                    playTrack(accessToken, trackUri, deviceId);
-                } else {
-                    console.log("No active device found. Please open Spotify on one of your devices.");
-                }
-            })
-            .catch(error => console.error("Error while getting active device:", error));
-    }
-});
 
 function getActiveDevice(accessToken) {
     console.log("Retrieving active device...");
