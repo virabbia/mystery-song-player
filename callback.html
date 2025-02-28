@@ -7,13 +7,25 @@
 <body>
     <p>Autenticando con Spotify...</p>
     <script>
+        console.log("🔑 Procesando autenticación...");
+
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.substring(1));
         const accessToken = params.get("access_token");
 
         if (accessToken) {
             localStorage.setItem("spotifyAccessToken", accessToken);
-            window.location.href = "https://virabbia.github.io/mystery-song-player/";
+
+            // Recuperar track ID almacenado antes de la autenticación
+            const trackId = localStorage.getItem("trackId");
+
+            if (trackId) {
+                console.log("🎶 Track ID recuperado después de autenticación:", trackId);
+                window.location.href = `https://virabbia.github.io/mystery-song-player/?track=spotify:track:${trackId}`;
+            } else {
+                console.log("⚠️ No hay track ID guardado. Redirigiendo sin track...");
+                window.location.href = "https://virabbia.github.io/mystery-song-player/";
+            }
         } else {
             document.body.innerHTML = "<p>Error al autenticar con Spotify.</p>";
         }
