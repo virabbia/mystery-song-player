@@ -16,15 +16,16 @@
         if (accessToken) {
             localStorage.setItem("spotifyAccessToken", accessToken);
 
-            // Recuperar track ID almacenado antes de la autenticación
+            // Check if there's a stored track ID
             const trackId = localStorage.getItem("trackId");
 
             if (trackId) {
                 console.log("🎶 Track ID recuperado después de autenticación:", trackId);
-                window.location.href = `https://virabbia.github.io/mystery-song-player/?track=spotify:track:${trackId}`;
+                // Redirect to main page WITHOUT redirecting again
+                window.location.href = `https://virabbia.github.io/mystery-song-player/?track=spotify:track:${trackId}#authenticated`;
             } else {
                 console.log("⚠️ No hay track ID guardado. Redirigiendo sin track...");
-                window.location.href = "https://virabbia.github.io/mystery-song-player/";
+                window.location.href = "https://virabbia.github.io/mystery-song-player/#authenticated";
             }
         } else {
             document.body.innerHTML = "<p>Error al autenticar con Spotify.</p>";
