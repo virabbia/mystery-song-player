@@ -1,13 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("Script cargado");
 
-    // Función para obtener el track ID desde la URL
+    // Obtener el track ID desde la URL del QR
     function getTrackFromURL() {
         const params = new URLSearchParams(window.location.search);
-        let trackUri = params.get("track"); // Obtiene el URI del QR
+        let trackUri = params.get("track"); // Obtiene el track desde la URL
 
         if (trackUri && trackUri.includes("spotify:track:")) {
-            return trackUri.replace("spotify:track:", ""); // Extrae solo el ID
+            return trackUri.split("spotify:track:")[1]; // Extrae solo el ID
         }
         return null;
     }
@@ -16,8 +16,20 @@ document.addEventListener("DOMContentLoaded", function () {
     let trackId = getTrackFromURL();
     console.log("Track detectado desde URL:", trackId);
 
+    // Elemento botón para iniciar la música
+    const playButton = document.getElementById("play-button");
+
+    // Si hay un track válido, actualiza el botón para iniciar la canción
     if (trackId) {
-        playSong(trackId);
+        playButton.addEventListener("click", function () {
+            playSong(trackId);
+        });
+
+        // Mostrar mensaje para que el usuario haga clic
+        playButton.innerText = "Haz clic para escuchar 🎵";
+    } else {
+        playButton.innerText = "No se encontró canción";
+        playButton.disabled = true;
     }
 
     // Función para actualizar el reproductor sin abrir nueva pestaña
