@@ -1,55 +1,78 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     console.log("Script cargado");
+
+    // Tu Client ID de Spotify Developer
+    const CLIENT_ID = "0e507d976bac454da727e5da965c22fb";
+    const REDIRECT_URI = "https://virabbia.github.io/mystery-song-player/callback.html"; // Página de autenticación
+    const SCOPES = "streaming user-read-playback-state user-modify-playback-state";
+
+    let trackId = getTrackFromURL();
+    
+    if (trackId) {
+        document.getElementById("play-button").addEventListener("click", function () {
+            requestSpotifyAuthorization();
+        });
+    }
 
     // Obtener el track ID desde la URL del QR
     function getTrackFromURL() {
         const params = new URLSearchParams(window.location.search);
-        let trackUri = params.get("track"); // Obtiene el track desde la URL
+        let trackUri = params.get("track");
 
         if (trackUri && trackUri.includes("spotify:track:")) {
-            return trackUri.split("spotify:track:")[1]; // Extrae solo el ID
+            return trackUri.split("spotify:track:")[1];
         }
         return null;
     }
 
-    // Detecta el track al cargar la página
-    let trackId = getTrackFromURL();
-    console.log("Track detectado desde URL:", trackId);
-
-    // Elemento botón para iniciar la música
-    const playButton = document.getElementById("play-button");
-
-    // Si hay un track válido, actualiza el botón para iniciar la canción
-    if (trackId) {
-        playButton.addEventListener("click", function () {
-            playSong(trackId);
-        });
-
-        // Mostrar mensaje para que el usuario haga clic
-        playButton.innerText = "Haz clic para escuchar 🎵";
-    } else {
-        playButton.innerText = "No se encontró canción";
-        playButton.disabled = true;
+    // Solicitar autorización a Spotify
+    function requestSpotifyAuthorization() {
+        const authURL = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+        window.location.href = authURL;
     }
 
-    // Función para actualizar el reproductor sin abrir nueva pestaña
-    function playSong(trackId) {
-        console.log("Reproduciendo canción:", trackId);
+    // Función para reproducir la canción en Spotify
+    async function playTrack(trackId, accessToken) {
+        const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                uris: [`spotify:track:${trackId}`]
+            })
+        });
 
-        let existingIframe = document.getElementById("spotify-player");
-        if (existingIframe) {
-            existingIframe.src = `https://open.spotify.com/embed/track/${trackId}`;
+        if (response.ok) {
+            console.log("Reproducción iniciada");
+            setTimeout(() => skipForward(accessToken), 20000); // Detener después de 20s
         } else {
-            let iframe = document.createElement("iframe");
-            iframe.setAttribute("id", "spotify-player");
-            iframe.setAttribute("src", `https://open.spotify.com/embed/track/${trackId}`);
-            iframe.setAttribute("width", "100%");
-            iframe.setAttribute("height", "80");
-            iframe.setAttribute("frameborder", "0");
-            iframe.setAttribute("allowtransparency", "true");
-            iframe.setAttribute("allow", "encrypted-media");
-
-            document.querySelector(".content-wrapper").appendChild(iframe);
+            console.error("Error al reproducir:", await response.json());
         }
+    }
+
+    // Saltar 10 segundos
+    async function skipForward(accessToken) {
+        await fetch("https://api.spotify.com/v1/me/player/seek?position_ms=10000", {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+        console.log("Se adelantaron 10s");
+    }
+
+    // Obtener el token desde la URL después de autenticarse
+    function getAccessToken() {
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        return params.get("access_token");
+    }
+
+    // Si el usuario vuelve desde Spotify, obtener el token y reproducir la canción
+    let accessToken = getAccessToken();
+    if (accessToken && trackId) {
+        playTrack(trackId, accessToken);
     }
 });
