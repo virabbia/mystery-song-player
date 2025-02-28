@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("Script cargado");
 
-    // Función para obtener parámetros desde la URL
+    // Función para obtener el track ID desde la URL
     function getTrackFromURL() {
-        const params = new URLSearchParams(window.location.hash.substring(1));
-        return params.get("track"); // Obtiene el ID de la canción desde el QR
+        const params = new URLSearchParams(window.location.search);
+        let trackUri = params.get("track"); // Obtiene el URI del QR
+
+        if (trackUri && trackUri.includes("spotify:track:")) {
+            return trackUri.replace("spotify:track:", ""); // Extrae solo el ID
+        }
+        return null;
     }
 
     // Detecta el track al cargar la página
