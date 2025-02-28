@@ -1,29 +1,27 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    console.log("Script cargado");
+    console.log("🎵 Script cargado");
 
-    const CLIENT_ID = "0e507d976bac454da727e5da965c22fb";
+    const CLIENT_ID = "TU_CLIENT_ID";  // Replace with your Spotify Client ID
     const REDIRECT_URI = "https://virabbia.github.io/mystery-song-player/callback.html";
     const SCOPES = "streaming user-read-playback-state user-modify-playback-state";
 
     let trackId = getTrackFromURL();
 
     if (trackId) {
-        // Store track in localStorage so it's not lost after authentication
         localStorage.setItem("trackId", trackId);
-
         document.getElementById("play-button").addEventListener("click", function () {
             requestSpotifyAuthorization();
         });
 
         document.getElementById("play-button").innerText = "Haz clic para escuchar 🎵";
     } else {
-        // Retrieve track from localStorage after authentication
         trackId = localStorage.getItem("trackId");
-        console.log("Recuperando Track ID desde localStorage:", trackId);
+        console.log("📀 Recuperando Track ID desde localStorage:", trackId);
     }
 
     let accessToken = getAccessToken();
     if (accessToken && trackId) {
+        console.log("🎶 Token y Track ID disponibles, intentando reproducir...");
         playTrack(trackId, accessToken);
     }
 
@@ -43,7 +41,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     async function playTrack(trackId, accessToken) {
-        const response = await fetch("https://api.spotify.com/v1/me/player/play", {
+        console.log(`🎧 Intentando reproducir: ${trackId}`);
+
+        // Ensure there's an active device
+        let deviceId = await getActiveDevice(accessToken);
+        if (!deviceId) {
+            console.error("🚨 No active Spotify device found. Open Spotify and play a song.");
+            alert("Por favor, abre Spotify en tu teléfono o PC y empieza a reproducir una canción manualmente.");
+            return;
+        }
+
+        // Play the song
+        const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${accessToken}`,
@@ -52,11 +61,13 @@ document.addEventListener("DOMContentLoaded", async function () {
             body: JSON.stringify({ uris: [`spotify:track:${trackId}`] })
         });
 
+        const data = await response.json().catch(() => {});
         if (response.ok) {
-            console.log("Reproducción iniciada");
+            console.log("✅ Reproducción iniciada con éxito.");
             setTimeout(() => pausePlayback(accessToken), 20000); // Stop after 20s
         } else {
-            console.error("Error al reproducir:", await response.json());
+            console.error("❌ Error al reproducir:", data);
+            alert("Error al reproducir la canción. Revisa la consola (F12) para más detalles.");
         }
     }
 
@@ -65,7 +76,21 @@ document.addEventListener("DOMContentLoaded", async function () {
             method: "PUT",
             headers: { "Authorization": `Bearer ${accessToken}` }
         });
-        console.log("Reproducción detenida después de 20s");
+        console.log("⏸️ Reproducción detenida después de 20s");
+    }
+
+    async function getActiveDevice(accessToken) {
+        const response = await fetch("https://api.spotify.com/v1/me/player/devices", {
+            headers: { "Authorization": `Bearer ${accessToken}` }
+        });
+
+        const data = await response.json();
+        if (data.devices.length > 0) {
+            console.log("🎵 Dispositivo activo:", data.devices[0].id);
+            return data.devices[0].id;
+        } else {
+            return null;
+        }
     }
 
     function getAccessToken() {
