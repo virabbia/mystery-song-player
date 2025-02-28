@@ -1,28 +1,31 @@
 document.addEventListener("DOMContentLoaded", async function () {
     console.log("🎵 Script cargado");
 
-    const CLIENT_ID = "0e507d976bac454da727e5da965c22fb";  // Replace with your Spotify Client ID
+    const CLIENT_ID = "TU_CLIENT_ID";  // Replace with your actual Spotify Client ID
     const REDIRECT_URI = "https://virabbia.github.io/mystery-song-player/callback.html";
     const SCOPES = "streaming user-read-playback-state user-modify-playback-state";
 
     let trackId = getTrackFromURL();
-
-    if (trackId) {
-        localStorage.setItem("trackId", trackId);
-        document.getElementById("play-button").addEventListener("click", function () {
-            requestSpotifyAuthorization();
-        });
-
-        document.getElementById("play-button").innerText = "Haz clic para escuchar 🎵";
-    } else {
-        trackId = localStorage.getItem("trackId");
-        console.log("📀 Recuperando Track ID desde localStorage:", trackId);
-    }
-
     let accessToken = getAccessToken();
-    if (accessToken && trackId) {
-        console.log("🎶 Token y Track ID disponibles, intentando reproducir...");
-        playTrack(trackId, accessToken);
+
+    if (accessToken) {
+        console.log("🔑 Token encontrado. No es necesario autenticarse nuevamente.");
+        if (trackId) {
+            playTrack(trackId, accessToken);
+        }
+    } else {
+        console.log("🔐 No hay token, se necesita autenticación.");
+
+        if (trackId) {
+            localStorage.setItem("trackId", trackId);
+            document.getElementById("play-button").addEventListener("click", function () {
+                requestSpotifyAuthorization();
+            });
+            document.getElementById("play-button").innerText = "Haz clic para escuchar 🎵";
+        } else {
+            trackId = localStorage.getItem("trackId");
+            console.log("📀 Recuperando Track ID desde localStorage:", trackId);
+        }
     }
 
     function getTrackFromURL() {
@@ -43,7 +46,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function playTrack(trackId, accessToken) {
         console.log(`🎧 Intentando reproducir: ${trackId}`);
 
-        // Ensure there's an active device
         let deviceId = await getActiveDevice(accessToken);
         if (!deviceId) {
             console.error("🚨 No active Spotify device found. Open Spotify and play a song.");
@@ -51,7 +53,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
-        // Play the song
         const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
             method: "PUT",
             headers: {
