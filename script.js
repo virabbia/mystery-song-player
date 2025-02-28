@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", async function () {
     console.log("Script cargado");
 
-    const CLIENT_ID = "TU_CLIENT_ID";
+    const CLIENT_ID = "0e507d976bac454da727e5da965c22fb";
     const REDIRECT_URI = "https://virabbia.github.io/mystery-song-player/callback.html";
     const SCOPES = "streaming user-read-playback-state user-modify-playback-state";
 
