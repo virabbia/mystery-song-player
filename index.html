@@ -3,74 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hitster Versión Viki v1.5</title>
+  <title>Hitster Versión Viki v1.6</title>
 
-  <!-- 1) Cargar html5-qrcode desde dos CDNs fiables -->
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+  <!-- 1) Carga CORRECTA de html5-qrcode -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
 
   <!-- 2) Fuentes y estilos -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-      font-family: 'Open Sans', sans-serif;
-      margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 100vh; overflow: hidden;
-    }
-    header {
-      font-family: 'Fredoka One', cursive;
-      font-size: 3rem; color: #fff;
-      text-shadow: 2px 2px #ff6363;
-      margin-bottom: 10px; text-align: center;
-    }
-    header small {
-      font-size: 1rem; opacity: .8; vertical-align: middle;
-    }
-    .content-wrapper {
-      background: #fff; border-radius: 20px;
-      padding: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      text-align: center; width: 80%; max-width: 600px;
-    }
-    .play-button {
-      background: #ff6363; color: #fff; border: none;
-      padding: 10px 20px; border-radius: 30px;
-      font-weight: 600; cursor: pointer;
-      box-shadow: 0 4px 10px rgba(255,99,99,0.4);
-      transition: transform .2s, box-shadow .2s;
-      font-size: .9rem;
-    }
-    .play-button:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 15px rgba(255,99,99,0.6);
-    }
+    body { background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%); font-family: 'Open Sans', sans-serif; margin:0; padding:0;
+           display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; overflow:hidden; }
+    header { font-family:'Fredoka One', cursive; font-size:3rem; color:#fff; text-shadow:2px 2px #ff6363;
+             margin-bottom:10px; text-align:center; }
+    header small { font-size:1rem; opacity:.8; vertical-align:middle; }
+    .content-wrapper { background:#fff; border-radius:20px; padding:30px;
+                       box-shadow:0 10px 20px rgba(0,0,0,0.2); text-align:center;
+                       width:80%; max-width:600px; }
+    .play-button { background:#ff6363; color:#fff; border:none; padding:10px 20px;
+                   border-radius:30px; font-weight:600; cursor:pointer;
+                   box-shadow:0 4px 10px rgba(255,99,99,0.4);
+                   transition:transform .2s,box-shadow .2s; font-size:.9rem; }
+    .play-button:hover { transform:scale(1.1); box-shadow:0 6px 15px rgba(255,99,99,0.6); }
     #qr-reader { margin:20px auto; width:300px; }
-    .music-bars {
-      display:flex; justify-content:center; align-items:flex-end;
-      margin-top:20px;
-    }
-    .bar {
-      width:10px; height:40px; margin:0 5px;
-      background:#ff9a9e; animation:bounce 1s infinite alternate;
-    }
-    .bar:nth-child(2){animation-delay:.2s;}
-    .bar:nth-child(3){animation-delay:.4s;}
-    .bar:nth-child(4){animation-delay:.6s;}
-    .bar:nth-child(5){animation-delay:.8s;}
+    .music-bars { display:flex; justify-content:center; align-items:flex-end; margin-top:20px; }
+    .bar { width:10px; height:40px; margin:0 5px; background:#ff9a9e;
+           animation:bounce 1s infinite alternate; }
+    .bar:nth-child(2){animation-delay:.2s;} .bar:nth-child(3){animation-delay:.4s;}
+    .bar:nth-child(4){animation-delay:.6s;} .bar:nth-child(5){animation-delay:.8s;}
     @keyframes bounce{0%{height:40px;}100%{height:100px;}}
-    .dancing-viki {
-      position:absolute; bottom:10px; right:10px;
-      width:120px; animation:flip-dance 1.5s infinite;
-    }
-    @keyframes flip-dance {
-      0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);}
-    }
+    .dancing-viki { position:absolute; bottom:10px; right:10px; width:120px; animation:flip-dance 1.5s infinite; }
+    @keyframes flip-dance{0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);}}
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v1.5</small></header>
+  <header>Hitster Versión Viki <small>v1.6</small></header>
   <div class="content-wrapper">
     <button id="start-button" class="play-button">Iniciar escaneo</button>
     <div id="qr-reader" style="display:none;"></div>
@@ -81,17 +48,15 @@
         <div class="bar"></div><div class="bar"></div>
         <div class="bar"></div>
       </div>
-      <button id="scan-again" class="play-button" style="margin-top:15px;">
-        Escanear otro QR
-      </button>
+      <button id="scan-again" class="play-button" style="margin-top:15px;">Escanear otro QR</button>
     </div>
   </div>
   <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
        alt="Dancing Viki" class="dancing-viki">
 
   <script>
-    const VERSION       = 'v1.5';
-    const CLIENT_ID     = '0e507d976bac454da727e5da965c22fb';
+    const VERSION   = 'v1.6';
+    const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada: ${location.href}`);
 
     const startBtn     = document.getElementById('start-button');
@@ -104,7 +69,7 @@
       console.log(`[${VERSION}] click en Iniciar escaneo`);
       startBtn.disabled = true;
       if (!window.Html5Qrcode) {
-        const msg = 'html5-qrcode NO está definido. Verifica que los <script> estén antes de este bloque.';
+        const msg = 'html5-qrcode NO está definido. Revisa que el <script> apunte a la carpeta “minified”.';
         console.error(`[${VERSION}] ${msg}`);
         return alert(msg);
       }
@@ -121,25 +86,20 @@
           if (!cams.length) throw new Error('No hay cámaras disponibles');
           console.log(`[${VERSION}] Cámaras detectadas:`, cams);
           return html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            err => console.warn(`[${VERSION}] Error menor escaneo:`, err)
+            { facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            onScanSuccess, err => console.warn(`[${VERSION}] Error de escaneo:`, err)
           );
         })
         .catch(e => {
           console.error(`[${VERSION}] ERROR initScanner/cameras:`, e);
-          alert(`Error accediendo a la cámara:\n${e.message}`);
+          alert(`Error al acceder a la cámara:\n${e.message}`);
         });
     }
 
     function onScanSuccess(decodedText) {
       console.log(`[${VERSION}] QR detectado:`, decodedText);
       const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
-      if (!m) {
-        alert('El código QR no contiene una pista de Spotify válida.');
-        return console.warn(`[${VERSION}] QR no válido para Spotify`);
-      }
+      if (!m) return alert('QR sin pista Spotify válida.');
       const trackUri = m[0];
       html5QrCode.stop()
         .then(() => {
@@ -149,8 +109,8 @@
           playTrack(trackUri);
         })
         .catch(e => {
-          console.error(`[${VERSION}] ERROR deteniendo escáner:`, e);
-          alert(`Error al detener el escáner:\n${e.message}`);
+          console.error(`[${VERSION}] ERROR stop():`, e);
+          alert(`Error al detener escáner:\n${e.message}`);
         });
     }
 
@@ -166,24 +126,25 @@
       try {
         let token = localStorage.getItem('spotifyAccessToken');
         if (!token || !location.hash.includes('#authenticated')) {
-          console.log(`[${VERSION}] No autenticado, redirigiendo a Auth`);
+          console.log(`[${VERSION}] No autenticado, redirigiendo…`);
           localStorage.setItem('trackId', trackUri.split(':').pop());
           const authUrl =
             `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
             `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
             `&scope=user-modify-playback-state&response_type=token`;
-          return location.href = authUrl;
+          location.href = authUrl;
+          return;
         }
         const res = await fetch('https://api.spotify.com/v1/me/player/play', {
           method: 'PUT',
-          headers: { 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ uris: [ trackUri ] })
+          headers: {'Authorization':'Bearer '+token},
+          body: JSON.stringify({uris:[trackUri]})
         });
-        if (!res.ok) throw new Error(`Status ${res.status} ${res.statusText}`);
-        console.log(`[${VERSION}] Canción enviada a Spotify (HTTP ${res.status})`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        console.log(`[${VERSION}] Song play OK (HTTP ${res.status})`);
       } catch (e) {
         console.error(`[${VERSION}] ERROR playTrack:`, e);
-        alert(`Error reproduciendo en Spotify:\n${e.message}`);
+        alert(`Error reproduciendo:\n${e.message}`);
       }
     }
   </script>
