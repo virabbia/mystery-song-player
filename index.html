@@ -3,46 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hitster Versión Viki v1.4</title>
+  <title>Hitster Versión Viki v1.5</title>
 
-  <!-- 1) Intentamos cargar html5-qrcode desde varios CDNs -->
-  <script>
-    const VERSION = 'v1.4';
-    console.log(`[${VERSION}] ▶️ Iniciando carga de html5-qrcode`);
+  <!-- 1) Cargar html5-qrcode desde dos CDNs fiables -->
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
 
-    window._qrLoaded = false;
-    window._qrFailed = false;
-
-    const cdnList = [
-      'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js',
-      'https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js'
-    ];
-    let cdnIndex = 0;
-
-    function loadNextCdn() {
-      if (cdnIndex >= cdnList.length) {
-        console.error(`[${VERSION}] ❌ Todos los CDNs de html5-qrcode fallaron`);
-        window._qrFailed = true;
-        return;
-      }
-      const src = cdnList[cdnIndex++];
-      console.log(`[${VERSION}] 🌐 Probando carga desde: ${src}`);
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = () => {
-        console.log(`[${VERSION}] ✅ html5-qrcode cargado desde ${src}`);
-        window._qrLoaded = true;
-      };
-      s.onerror = () => {
-        console.warn(`[${VERSION}] ⚠️ Falló carga desde ${src}`);
-        loadNextCdn();
-      };
-      document.head.appendChild(s);
-    }
-    loadNextCdn();
-  </script>
-
-  <!-- 2) Estilos y fuentes -->
+  <!-- 2) Fuentes y estilos -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -103,7 +70,7 @@
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v1.4</small></header>
+  <header>Hitster Versión Viki <small>v1.5</small></header>
   <div class="content-wrapper">
     <button id="start-button" class="play-button">Iniciar escaneo</button>
     <div id="qr-reader" style="display:none;"></div>
@@ -122,8 +89,9 @@
   <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
        alt="Dancing Viki" class="dancing-viki">
 
-  <!-- 3) Lógica JS -->
   <script>
+    const VERSION       = 'v1.5';
+    const CLIENT_ID     = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada: ${location.href}`);
 
     const startBtn     = document.getElementById('start-button');
@@ -135,15 +103,11 @@
     startBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] click en Iniciar escaneo`);
       startBtn.disabled = true;
-
-      if (!window._qrLoaded) {
-        const msg = window._qrFailed
-          ? 'No se pudo cargar html5-qrcode desde ningún CDN.'
-          : 'html5-qrcode aún no ha terminado de cargarse. Espera unos segundos y vuelve a intentarlo.';
+      if (!window.Html5Qrcode) {
+        const msg = 'html5-qrcode NO está definido. Verifica que los <script> estén antes de este bloque.';
         console.error(`[${VERSION}] ${msg}`);
         return alert(msg);
       }
-
       startBtn.style.display = 'none';
       qrReader.style.display = 'block';
       initScanner();
@@ -151,35 +115,30 @@
 
     function initScanner() {
       console.log(`[${VERSION}] initScanner()`);
-      try {
-        html5QrCode = new Html5Qrcode("qr-reader");
-        Html5Qrcode.getCameras()
-          .then(cams => {
-            if (!cams.length) throw new Error('No hay cámaras disponibles');
-            console.log(`[${VERSION}] Cámaras detectadas:`, cams);
-            return html5QrCode.start(
-              { facingMode: "environment" },
-              { fps: 10, qrbox: 250 },
-              onScanSuccess,
-              err => console.warn(`[${VERSION}] Error menor escaneo:`, err)
-            );
-          })
-          .catch(e => {
-            console.error(`[${VERSION}] ERROR initScanner/cameras:`, e);
-            alert(`Error accediendo a la cámara:\n${e.message}`);
-          });
-      } catch (e) {
-        console.error(`[${VERSION}] ERROR initScanner:`, e);
-        alert(`Error al inicializar el escáner:\n${e.message}`);
-      }
+      html5QrCode = new Html5Qrcode("qr-reader");
+      Html5Qrcode.getCameras()
+        .then(cams => {
+          if (!cams.length) throw new Error('No hay cámaras disponibles');
+          console.log(`[${VERSION}] Cámaras detectadas:`, cams);
+          return html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            onScanSuccess,
+            err => console.warn(`[${VERSION}] Error menor escaneo:`, err)
+          );
+        })
+        .catch(e => {
+          console.error(`[${VERSION}] ERROR initScanner/cameras:`, e);
+          alert(`Error accediendo a la cámara:\n${e.message}`);
+        });
     }
 
     function onScanSuccess(decodedText) {
       console.log(`[${VERSION}] QR detectado:`, decodedText);
       const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
       if (!m) {
-        console.warn(`[${VERSION}] QR no válido para Spotify`);
-        return alert('El código QR no contiene una pista de Spotify válida.');
+        alert('El código QR no contiene una pista de Spotify válida.');
+        return console.warn(`[${VERSION}] QR no válido para Spotify`);
       }
       const trackUri = m[0];
       html5QrCode.stop()
@@ -207,13 +166,13 @@
       try {
         let token = localStorage.getItem('spotifyAccessToken');
         if (!token || !location.hash.includes('#authenticated')) {
-          console.log(`[${VERSION}] No autenticado, redirigiendo a Spotify Auth`);
+          console.log(`[${VERSION}] No autenticado, redirigiendo a Auth`);
           localStorage.setItem('trackId', trackUri.split(':').pop());
           const authUrl =
-            `https://accounts.spotify.com/authorize?client_id=0e507d976bac454da727e5da965c22fb` +
+            `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
             `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
             `&scope=user-modify-playback-state&response_type=token`;
-          return window.location.href = authUrl;
+          return location.href = authUrl;
         }
         const res = await fetch('https://api.spotify.com/v1/me/player/play', {
           method: 'PUT',
