@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hitster Versión Viki v1.7</title>
+  <title>Hitster Versión Viki v1.8</title>
 
   <!-- 1) Carga CORRECTA de html5‑qrcode ANTES de tu código -->
   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
@@ -48,12 +48,12 @@
     }
     #qr-reader { margin:20px auto; width:300px; }
     .music-bars {
-      display: flex; justify-content: center; align-items: flex-end;
-      margin-top: 20px;
+      display:flex; justify-content:center; align-items:flex-end;
+      margin-top:20px;
     }
     .bar {
-      width: 10px; height: 40px; margin: 0 5px;
-      background: #ff9a9e; animation: bounce 1s infinite alternate;
+      width:10px; height:40px; margin:0 5px;
+      background:#ff9a9e; animation:bounce 1s infinite alternate;
     }
     .bar:nth-child(2){animation-delay:.2s;}
     .bar:nth-child(3){animation-delay:.4s;}
@@ -61,14 +61,14 @@
     .bar:nth-child(5){animation-delay:.8s;}
     @keyframes bounce{0%{height:40px;}100%{height:100px;}}
     .dancing-viki {
-      position: absolute; bottom: 10px; right: 10px;
-      width: 120px; animation: flip-dance 1.5s infinite;
+      position:absolute; bottom:10px; right:10px;
+      width:120px; animation:flip-dance 1.5s infinite;
     }
     @keyframes flip-dance{0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);}}
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v1.7</small></header>
+  <header>Hitster Versión Viki <small>v1.8</small></header>
   <div class="content-wrapper">
     <button id="start-button" class="play-button">Iniciar escaneo</button>
     <div id="qr-reader" style="display:none;"></div>
@@ -87,9 +87,9 @@
   <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
        alt="Dancing Viki" class="dancing-viki">
 
-  <!-- 3) Lógica JavaScript embebida -->
+  <!-- 3) Lógica JavaScript embebida con mejoras -->
   <script>
-    const VERSION   = 'v1.7';
+    const VERSION   = 'v1.8';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada: ${location.href}`);
 
@@ -99,11 +99,12 @@
     const scanAgainBtn = document.getElementById('scan-again');
     let html5QrCode;
 
+    // Al hacer click, iniciamos escaneo
     startBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] click en Iniciar escaneo`);
       startBtn.disabled = true;
       if (!window.Html5Qrcode) {
-        const msg = '⚠️ html5‑qrcode NO está definido. Verifica que los <script> estén en el <head>.';
+        const msg = '⚠️ html5‑qrcode NO está definido. Revisa el <script> en el <head>.';
         console.error(`[${VERSION}] ${msg}`);
         return alert(msg);
       }
@@ -112,6 +113,7 @@
       initScanner();
     });
 
+    // Configurar y arrancar lector
     function initScanner() {
       console.log(`[${VERSION}] initScanner()`);
       html5QrCode = new Html5Qrcode("qr-reader");
@@ -123,36 +125,44 @@
             { facingMode: "environment" },
             { fps: 10, qrbox: 250 },
             onScanSuccess,
-            err => console.warn(`[${VERSION}] Error de escaneo menor:`, err)
+            err => console.warn(`[${VERSION}] No pudo leer QR:`, err)
           );
         })
         .catch(e => {
           console.error(`[${VERSION}] ERROR initScanner/cameras:`, e);
-          alert(`Error al acceder a la cámara:\n${e.message}`);
+          alert(`Error cámara:\n${e.message}`);
         });
     }
 
+    // Cuando detecta QR
     function onScanSuccess(decodedText) {
       console.log(`[${VERSION}] QR detectado:`, decodedText);
-      const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
-      if (!m) {
-        alert('🔍 El QR no contiene una pista de Spotify válida.');
-        return console.warn(`[${VERSION}] QR no válido para Spotify`);
+      // Acepta spotify:track:ID o https://open.spotify.com/track/ID
+      const match = decodedText.match(/(?:spotify:track:|https:\/\/open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
+      if (!match) {
+        alert('🔍 El QR no contiene una pista Spotify válida.');
+        return console.warn(`[${VERSION}] Formato no válido:`, decodedText);
       }
-      const trackUri = m[0];
+      const trackUri = `spotify:track:${match[1]}`;
       html5QrCode.stop()
         .then(() => {
           console.log(`[${VERSION}] Escáner detenido`);
-          qrReader.style.display   = 'none';
-          playerSect.style.display = 'block';
-          playTrack(trackUri);
+          // 1) Primero reproducimos
+          playTrack(trackUri)
+            .then(() => {
+              console.log(`[${VERSION}] Reproducción iniciada`);
+              // 2) Después mostramos “Escanear otro QR”
+              qrReader.style.display   = 'none';
+              playerSect.style.display = 'block';
+            });
         })
         .catch(e => {
-          console.error(`[${VERSION}] ERROR al detener escáner:`, e);
-          alert(`Error al detener el escáner:\n${e.message}`);
+          console.error(`[${VERSION}] ERROR detener escáner:`, e);
+          alert(`Error detener escáner:\n${e.message}`);
         });
     }
 
+    // Re-scan al clicar
     scanAgainBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] click en Escanear otro QR`);
       playerSect.style.display = 'none';
@@ -160,29 +170,35 @@
       initScanner();
     });
 
+    // Reproducir en Spotify
     async function playTrack(trackUri) {
       console.log(`[${VERSION}] playTrack() → ${trackUri}`);
       try {
         let token = localStorage.getItem('spotifyAccessToken');
         if (!token || !location.hash.includes('#authenticated')) {
-          console.log(`[${VERSION}] No autenticado, redirigiendo a Spotify Auth`);
+          console.log(`[${VERSION}] No autenticado, redirigiendo a Auth`);
           localStorage.setItem('trackId', trackUri.split(':').pop());
           const authUrl =
             `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
             `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
             `&scope=user-modify-playback-state&response_type=token`;
-          return location.href = authUrl;
+          location.href = authUrl;
+          return;
         }
         const res = await fetch('https://api.spotify.com/v1/me/player/play', {
           method: 'PUT',
           headers: { 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ uris: [ trackUri ] })
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        console.log(`[${VERSION}] Canción enviada a Spotify (HTTP ${res.status})`);
+        if (!res.ok) {
+          const msg = `Spotify API error: HTTP ${res.status}`;
+          console.error(`[${VERSION}] ${msg}`);
+          throw new Error(msg);
+        }
+        console.log(`[${VERSION}] Song sent (HTTP ${res.status})`);
       } catch (e) {
         console.error(`[${VERSION}] ERROR playTrack:`, e);
-        alert(`Error reproduciendo la canción:\n${e.message}`);
+        alert(`Error reproduciendo:\n${e.message}`);
       }
     }
   </script>
