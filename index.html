@@ -1,182 +1,240 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hitster Versión Viki</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <!-- html5‑qrcode -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-    <style>
-        body {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            font-family: 'Open Sans', sans-serif;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            height: 100vh; overflow: hidden;
-        }
-        header {
-            font-family: 'Fredoka One', cursive;
-            font-size: 3rem; color: #fff;
-            text-shadow: 2px 2px #ff6363;
-            margin-bottom: 20px; text-align: center;
-        }
-        .content-wrapper {
-            background: #fff;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            text-align: center;
-            width: 80%; max-width: 600px;
-        }
-        .play-button {
-            background: #ff6363;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255,99,99,0.4);
-            transition: transform .2s, box-shadow .2s;
-            font-size: .9rem;
-        }
-        .play-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(255,99,99,0.6);
-        }
-        #qr-reader {
-            margin: 20px auto;
-            width: 300px;
-        }
-        .music-bars {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            margin-top: 20px;
-        }
-        .bar {
-            width: 10px; height: 40px;
-            margin: 0 5px;
-            background: #ff9a9e;
-            animation: bounce 1s infinite alternate;
-        }
-        .bar:nth-child(2) { animation-delay: .2s; }
-        .bar:nth-child(3) { animation-delay: .4s; }
-        .bar:nth-child(4) { animation-delay: .6s; }
-        .bar:nth-child(5) { animation-delay: .8s; }
-        @keyframes bounce { 0% { height:40px; } 100% { height:100px; } }
-        .dancing-viki {
-            position: absolute; bottom:10px; right:10px;
-            width:120px;
-            animation: flip-dance 1.5s infinite;
-        }
-        @keyframes flip-dance {
-            0%,100% { transform: scaleX(1); }
-            50%    { transform: scaleX(-1); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hitster Versión Viki v1.2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+      font-family: 'Open Sans', sans-serif;
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100vh; overflow: hidden;
+    }
+    header {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3rem; color: #fff;
+      text-shadow: 2px 2px #ff6363;
+      margin-bottom: 10px; text-align: center;
+    }
+    header small {
+      font-size: 1rem;
+      vertical-align: middle;
+      opacity: 0.8;
+    }
+    .content-wrapper {
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 80%; max-width: 600px;
+    }
+    .play-button {
+      background: #ff6363;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255,99,99,0.4);
+      transition: transform .2s, box-shadow .2s;
+      font-size: .9rem;
+    }
+    .play-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(255,99,99,0.6);
+    }
+    #qr-reader {
+      margin: 20px auto;
+      width: 300px;
+    }
+    .music-bars {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      margin-top: 20px;
+    }
+    .bar {
+      width: 10px; height: 40px;
+      margin: 0 5px;
+      background: #ff9a9e;
+      animation: bounce 1s infinite alternate;
+    }
+    .bar:nth-child(2) { animation-delay: .2s; }
+    .bar:nth-child(3) { animation-delay: .4s; }
+    .bar:nth-child(4) { animation-delay: .6s; }
+    .bar:nth-child(5) { animation-delay: .8s; }
+    @keyframes bounce { 0% { height:40px; } 100% { height:100px; } }
+    .dancing-viki {
+      position: absolute; bottom:10px; right:10px;
+      width:120px;
+      animation: flip-dance 1.5s infinite;
+    }
+    @keyframes flip-dance {
+      0%,100% { transform: scaleX(1); }
+      50%    { transform: scaleX(-1); }
+    }
+  </style>
 </head>
 <body>
-    <header>Hitster Versión Viki</header>
-    <div class="content-wrapper">
-        <!-- 1) Botón inicial -->
-        <button id="start-button" class="play-button">Iniciar escaneo</button>
-
-        <!-- 2) Lector QR (oculto) -->
-        <div id="qr-reader" style="display:none;"></div>
-
-        <!-- 3) Sección de reproducción + “Escanear otro” (oculta) -->
-        <div id="player-section" style="display:none;">
-            <p>🎶 Reproduciendo tu canción...</p>
-            <div class="music-bars">
-                <div class="bar"></div><div class="bar"></div>
-                <div class="bar"></div><div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <button id="scan-again" class="play-button" style="margin-top:15px;">
-                Escanear otro QR
-            </button>
-        </div>
+  <header>
+    Hitster Versión Viki <small>v1.2</small>
+  </header>
+  <div class="content-wrapper">
+    <!-- 1) Botón de inicio -->
+    <button id="start-button" class="play-button">Iniciar escaneo</button>
+    <!-- 2) Lector QR (oculto) -->
+    <div id="qr-reader" style="display:none;"></div>
+    <!-- 3) Reproducción y re-scan (oculto) -->
+    <div id="player-section" style="display:none;">
+      <p>🎶 Reproduciendo tu canción...</p>
+      <div class="music-bars">
+        <div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <button id="scan-again" class="play-button" style="margin-top:15px;">
+        Escanear otro QR
+      </button>
     </div>
+  </div>
 
-    <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
-         alt="Dancing Viki" class="dancing-viki">
+  <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
+       alt="Dancing Viki" class="dancing-viki">
 
-    <script>
-    // ---- Variables ----
+  <script>
+    // Versión
+    const VERSION = 'v1.2';
+    console.log(`[${VERSION}] Página cargada: ${location.href}`);
+
+    // Elementos
     const startBtn     = document.getElementById('start-button');
     const qrReader     = document.getElementById('qr-reader');
     const playerSect   = document.getElementById('player-section');
     const scanAgainBtn = document.getElementById('scan-again');
     let html5QrCode;
 
-    // ---- Comenzar escaneo al click ----
-    startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
-      qrReader.style.display = 'block';
-      initScanner();
+    // 1) Click en iniciar
+    startBtn.addEventListener('click', async () => {
+      console.log(`[${VERSION}] click en Iniciar escaneo`);
+      startBtn.disabled = true;
+      try {
+        await loadQrLib();
+        console.log(`[${VERSION}] Librería QR lista`);
+        startBtn.style.display = 'none';
+        qrReader.style.display = 'block';
+        initScanner();
+      } catch (e) {
+        console.error(`[${VERSION}] ERROR cargando html5-qrcode:`, e);
+        alert(`Error cargando html5-qrcode:\n${e.message}`);
+        startBtn.disabled = false;
+      }
     });
 
-    // ---- Iniciar html5‑qrcode ----
-    function initScanner() {
-      html5QrCode = new Html5Qrcode("qr-reader");
-      Html5Qrcode.getCameras()
-        .then(devices => {
-          if (!devices.length) { alert('No hay cámara disponible'); return; }
-          html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            onScanSuccess,
-            _ => {}
-          );
-        })
-        .catch(err => console.error('Error cámara', err));
+    // 2) Carga dinámica de html5-qrcode
+    function loadQrLib() {
+      return new Promise((resolve, reject) => {
+        if (window.Html5Qrcode) {
+          return resolve();
+        }
+        console.log(`[${VERSION}] Cargando html5-qrcode...`);
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('No se pudo cargar html5-qrcode desde unpkg'));
+        document.head.appendChild(s);
+      });
     }
 
-    // ---- Al detectar QR válido ----
-    function onScanSuccess(decodedText) {
-      const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
-      if (!m) { alert('QR no contiene pista válida'); return; }
-      const trackUri = m[0];
+    // 3) Inicializar escáner
+    function initScanner() {
+      console.log(`[${VERSION}] initScanner()`);
+      try {
+        if (!window.Html5Qrcode) throw new Error('Html5Qrcode no definido');
+        html5QrCode = new Html5Qrcode("qr-reader");
+        Html5Qrcode.getCameras()
+          .then(cams => {
+            if (!cams.length) throw new Error('No hay cámaras disponibles');
+            console.log(`[${VERSION}] Cámaras detectadas`, cams);
+            return html5QrCode.start(
+              { facingMode: "environment" },
+              { fps: 10, qrbox: 250 },
+              onScanSuccess,
+              err => console.warn(`[${VERSION}] Error menor escaneo:`, err)
+            );
+          })
+          .catch(e => {
+            console.error(`[${VERSION}] ERROR initScanner/cameras:`, e);
+            alert(`Error accediendo a la cámara:\n${e.message}`);
+          });
+      } catch (e) {
+        console.error(`[${VERSION}] ERROR initScanner:`, e);
+        alert(`Error inicializando escáner:\n${e.message}`);
+      }
+    }
 
+    // 4) Éxito de lectura QR
+    function onScanSuccess(decodedText) {
+      console.log(`[${VERSION}] QR detectado:`, decodedText);
+      const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
+      if (!m) {
+        console.warn(`[${VERSION}] QR no válido para Spotify`); 
+        alert('El código QR no contiene una pista de Spotify válida.');
+        return;
+      }
+      const trackUri = m[0];
       html5QrCode.stop()
         .then(() => {
+          console.log(`[${VERSION}] Escáner detenido`);
           qrReader.style.display   = 'none';
           playerSect.style.display = 'block';
           playTrack(trackUri);
         })
-        .catch(err => console.error('Stop scanner error', err));
+        .catch(e => {
+          console.error(`[${VERSION}] ERROR deteniendo escáner:`, e);
+          alert(`Error deteniendo escáner:\n${e.message}`);
+        });
     }
 
-    // ---- Escanear de nuevo ----
+    // 5) Escanear de nuevo
     scanAgainBtn.addEventListener('click', () => {
+      console.log(`[${VERSION}] click en Escanear otro QR`);
       playerSect.style.display = 'none';
       qrReader.style.display   = 'block';
       initScanner();
     });
 
-    // ---- Función de reproducción en Spotify ----
+    // 6) Función de reproducción en Spotify
     async function playTrack(trackUri) {
-      let token = localStorage.getItem('spotifyAccessToken');
-      // Si no está autenticado, redirigir
-      if (!token || !window.location.hash.includes('#authenticated')) {
-        localStorage.setItem('trackId', trackUri.split(':').pop());
-        const authUrl =
-          `https://accounts.spotify.com/authorize?client_id=0e507d976bac454da727e5da965c22fb` +
-          `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
-          `&scope=user-modify-playback-state&response_type=token`;
-        window.location.href = authUrl;
-        return;
+      console.log(`[${VERSION}] playTrack() → ${trackUri}`);
+      try {
+        let token = localStorage.getItem('spotifyAccessToken');
+        if (!token || !location.hash.includes('#authenticated')) {
+          console.log(`[${VERSION}] No autenticado, redirigiendo a Spotify Auth`);
+          localStorage.setItem('trackId', trackUri.split(':').pop());
+          const authUrl =
+            `https://accounts.spotify.com/authorize?client_id=TU_CLIENT_ID` +
+            `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
+            `&scope=user-modify-playback-state&response_type=token`;
+          return window.location.href = authUrl;
+        }
+        const res = await fetch('https://api.spotify.com/v1/me/player/play', {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ uris: [ trackUri ] })
+        });
+        if (!res.ok) throw new Error(`Status ${res.status} ${res.statusText}`);
+        console.log(`[${VERSION}] Canción enviada a Spotify (HTTP ${res.status})`);
+      } catch (e) {
+        console.error(`[${VERSION}] ERROR playTrack:`, e);
+        alert(`Error reproduciendo en Spotify:\n${e.message}`);
       }
-      // Ejecutar play
-      await fetch('https://api.spotify.com/v1/me/player/play', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ uris: [ trackUri ] })
-      });
     }
-    </script>
+  </script>
 </body>
 </html>
