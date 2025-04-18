@@ -164,7 +164,7 @@
       if (!token || !window.location.hash.includes('#authenticated')) {
         localStorage.setItem('trackId', trackUri.split(':').pop());
         const authUrl =
-          `https://accounts.spotify.com/authorize?client_id=TU_CLIENT_ID` +
+          `https://accounts.spotify.com/authorize?client_id=0e507d976bac454da727e5da965c22fb` +
           `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
           `&scope=user-modify-playback-state&response_type=token`;
         window.location.href = authUrl;
