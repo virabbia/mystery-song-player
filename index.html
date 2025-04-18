@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hitster Versión Viki</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <!-- 1) Importamos la librería QR -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%, #fad0c4 100%);
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             font-family: 'Open Sans', sans-serif;
             margin: 0;
             padding: 0;
@@ -18,7 +20,6 @@
             min-height: 100vh;
             overflow: hidden;
         }
-
         header {
             font-family: 'Fredoka One', cursive;
             font-size: 3rem;
@@ -28,7 +29,6 @@
             text-align: center;
             letter-spacing: 2px;
         }
-
         .content-wrapper {
             position: relative;
             width: 80%;
@@ -39,38 +39,13 @@
             padding: 30px;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
         }
-        
-        .content-wrapper h2, .content-wrapper p, .play-button {
-            text-align: center;
-            margin: 0 auto;
-        }
-        
-        .play-button {
-            display: inline-block;
-            background: #ff6363;
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 30px;
-            box-shadow: 0px 4px 10px rgba(255, 99, 99, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .play-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0px 6px 15px rgba(255, 99, 99, 0.6);
-        }
-
+        /* Estilos originales de las barras de música */
         .music-bars {
             display: flex;
             justify-content: center;
             align-items: flex-end;
             margin-top: 20px;
         }
-        
         .bar {
             width: 10px;
             height: 40px;
@@ -78,23 +53,11 @@
             background: #ff9a9e;
             animation: bounce 1s infinite alternate;
         }
-        
-        .bar:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .bar:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        .bar:nth-child(4) {
-            animation-delay: 0.6s;
-        }
-        
-        .bar:nth-child(5) {
-            animation-delay: 0.8s;
-        }
-
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+        .bar:nth-child(4) { animation-delay: 0.6s; }
+        .bar:nth-child(5) { animation-delay: 0.8s; }
+        @keyframes bounce { 0% { height: 40px; } 100% { height: 100px; } }
         .dancing-viki {
             position: absolute;
             bottom: 10px;
@@ -102,33 +65,90 @@
             width: 120px;
             animation: flip-dance 1.5s infinite;
         }
-        
-        @keyframes bounce {
-            0% { height: 40px; }
-            100% { height: 100px; }
-        }
-        
         @keyframes flip-dance {
             0%, 100% { transform: scaleX(1); }
-            50% { transform: scaleX(-1); }
+            50%       { transform: scaleX(-1); }
         }
     </style>
 </head>
 <body>
     <header>Hitster Versión Viki</header>
     <div class="content-wrapper">
-        <h2>¿Listo para adivinar?</h2>
-        <p>¡Haz clic en el botón de abajo y que el mejor gane!</p>
-        <button id="play-button" class="play-button">Reproducir Canción</button>
-        <div class="music-bars">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
+        <!-- 2) Zona de escaneo QR -->
+        <h2>Escanea el código QR para reproducir</h2>
+        <div id="qr-reader" style="width:300px; margin: 0 auto;"></div>
+
+        <!-- 3) Zona de reproducción (oculta hasta detectar QR) -->
+        <div id="player-section" style="display:none;">
+            <p>¡Canción cargada! Disfruta :</p>
+            <div class="music-bars">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
         </div>
     </div>
-    <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png" alt="Dancing Viki" class="dancing-viki">
-    <script src="script.js"></script>
+
+    <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
+         alt="Dancing Viki"
+         class="dancing-viki">
+
+    <script>
+    // === 4) Configuración del lector QR ===
+    function onScanSuccess(decodedText, decodedResult) {
+      // Buscamos la URI de Spotify
+      const m = decodedText.match(/spotify:track:[A-Za-z0-9]+/);
+      if (!m) return;
+      const trackUri = m[0];
+
+      // Detenemos el escáner y mostramos el player
+      html5QrCode.stop()
+        .then(() => {
+          document.getElementById('qr-reader').style.display = 'none';
+          document.getElementById('player-section').style.display = 'block';
+          playTrack(trackUri);
+        })
+        .catch(err => console.error('Error al parar el escáner', err));
+    }
+
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    Html5Qrcode.getCameras()
+      .then(devices => {
+        if (!devices || devices.length === 0) return console.error('No hay cámaras');
+        // Usamos la trasera si existe
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          onScanSuccess,
+          () => {/* ignoramos errores menores */}
+        );
+      })
+      .catch(err => console.error('Error accediendo a la cámara', err));
+
+    // === 5) Lógica de reproducción en Spotify ===
+    async function playTrack(trackUri) {
+      let token = localStorage.getItem('spotifyAccessToken');
+      // Si no hay token, redirigimos a autorizar
+      if (!token || window.location.hash.includes('#authenticated') === false) {
+        // Guardamos la pista para después de la auth
+        localStorage.setItem('trackId', trackUri.split(':').pop());
+        // Nota: reemplaza TU_CLIENT_ID y URI_CALLBACK por los tuyos
+        const authUrl =
+          `https://accounts.spotify.com/authorize?client_id=TU_CLIENT_ID` +
+          `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
+          `&scope=user-modify-playback-state&response_type=token`;
+        window.location.href = authUrl;
+        return;
+      }
+      // Ejecutamos el play
+      await fetch('https://api.spotify.com/v1/me/player/play', {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ uris: [ trackUri ] })
+      });
+    }
+    </script>
 </body>
 </html>
