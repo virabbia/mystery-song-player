@@ -3,11 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hitster Versión Viki v1.3</title>
+  <title>Hitster Versión Viki v1.4</title>
 
-  <!-- 1) Incluimos la librería QR de forma estática -->
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+  <!-- 1) Intentamos cargar html5-qrcode desde varios CDNs -->
+  <script>
+    const VERSION = 'v1.4';
+    console.log(`[${VERSION}] ▶️ Iniciando carga de html5-qrcode`);
 
+    window._qrLoaded = false;
+    window._qrFailed = false;
+
+    const cdnList = [
+      'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.7/minified/html5-qrcode.min.js',
+      'https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js'
+    ];
+    let cdnIndex = 0;
+
+    function loadNextCdn() {
+      if (cdnIndex >= cdnList.length) {
+        console.error(`[${VERSION}] ❌ Todos los CDNs de html5-qrcode fallaron`);
+        window._qrFailed = true;
+        return;
+      }
+      const src = cdnList[cdnIndex++];
+      console.log(`[${VERSION}] 🌐 Probando carga desde: ${src}`);
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => {
+        console.log(`[${VERSION}] ✅ html5-qrcode cargado desde ${src}`);
+        window._qrLoaded = true;
+      };
+      s.onerror = () => {
+        console.warn(`[${VERSION}] ⚠️ Falló carga desde ${src}`);
+        loadNextCdn();
+      };
+      document.head.appendChild(s);
+    }
+    loadNextCdn();
+  </script>
+
+  <!-- 2) Estilos y fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -68,8 +103,7 @@
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v1.3</small></header>
-
+  <header>Hitster Versión Viki <small>v1.4</small></header>
   <div class="content-wrapper">
     <button id="start-button" class="play-button">Iniciar escaneo</button>
     <div id="qr-reader" style="display:none;"></div>
@@ -85,12 +119,11 @@
       </button>
     </div>
   </div>
-
   <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
        alt="Dancing Viki" class="dancing-viki">
 
+  <!-- 3) Lógica JS -->
   <script>
-    const VERSION = 'v1.3';
     console.log(`[${VERSION}] Página cargada: ${location.href}`);
 
     const startBtn     = document.getElementById('start-button');
@@ -103,8 +136,10 @@
       console.log(`[${VERSION}] click en Iniciar escaneo`);
       startBtn.disabled = true;
 
-      if (!window.Html5Qrcode) {
-        const msg = 'Html5Qrcode NO está definido. ¿Se cargó la librería?';
+      if (!window._qrLoaded) {
+        const msg = window._qrFailed
+          ? 'No se pudo cargar html5-qrcode desde ningún CDN.'
+          : 'html5-qrcode aún no ha terminado de cargarse. Espera unos segundos y vuelve a intentarlo.';
         console.error(`[${VERSION}] ${msg}`);
         return alert(msg);
       }
@@ -135,7 +170,7 @@
           });
       } catch (e) {
         console.error(`[${VERSION}] ERROR initScanner:`, e);
-        alert(`Error inicializando escáner:\n${e.message}`);
+        alert(`Error al inicializar el escáner:\n${e.message}`);
       }
     }
 
@@ -156,7 +191,7 @@
         })
         .catch(e => {
           console.error(`[${VERSION}] ERROR deteniendo escáner:`, e);
-          alert(`Error deteniendo escáner:\n${e.message}`);
+          alert(`Error al detener el escáner:\n${e.message}`);
         });
     }
 
@@ -172,7 +207,7 @@
       try {
         let token = localStorage.getItem('spotifyAccessToken');
         if (!token || !location.hash.includes('#authenticated')) {
-          console.log(`[${VERSION}] No autenticado, redirigiendo a Auth`);
+          console.log(`[${VERSION}] No autenticado, redirigiendo a Spotify Auth`);
           localStorage.setItem('trackId', trackUri.split(':').pop());
           const authUrl =
             `https://accounts.spotify.com/authorize?client_id=0e507d976bac454da727e5da965c22fb` +
