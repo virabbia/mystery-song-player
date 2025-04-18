@@ -3,114 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hitster Versión Viki v1.9</title>
+  <title>Hitster Versión Viki v1.10</title>
 
-  <!-- 1) Carga de html5-qrcode -->
+  <!-- 1) html5-qrcode -->
   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
 
-  <!-- 2) Fuentes y estilos -->
+  <!-- 2) Estilos -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-      font-family: 'Open Sans', sans-serif;
-      margin:0; padding:0;
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center;
-      height:100vh; overflow:hidden;
-    }
-    header {
-      font-family:'Fredoka One', cursive;
-      font-size:3rem; color:#fff;
-      text-shadow:2px 2px #ff6363;
-      margin-bottom:10px;
-      text-align:center;
-    }
-    header small { font-size:1rem; opacity:.8; }
-    .content-wrapper {
-      background:#fff; border-radius:20px;
-      padding:30px; box-shadow:0 10px 20px rgba(0,0,0,0.2);
-      text-align:center; width:80%; max-width:600px;
-    }
-    .play-button {
-      background:#ff6363; color:#fff; border:none;
-      padding:10px 20px; border-radius:30px;
-      font-weight:600; cursor:pointer;
-      box-shadow:0 4px 10px rgba(255,99,99,0.4);
-      transition:transform .2s,box-shadow .2s;
-      font-size:.9rem;
-    }
-    .play-button:hover {
-      transform:scale(1.1);
-      box-shadow:0 6px 15px rgba(255,99,99,0.6);
-    }
-    #qr-reader { width:300px; margin:0 auto; }
-    .music-bars {
-      display:flex; justify-content:center; align-items:flex-end;
-      margin-top:20px;
-    }
-    .bar {
-      width:10px; height:40px; margin:0 5px;
-      background:#ff9a9e; animation:bounce 1s infinite alternate;
-    }
-    .bar:nth-child(2){animation-delay:.2s;}
-    .bar:nth-child(3){animation-delay:.4s;}
-    .bar:nth-child(4){animation-delay:.6s;}
-    .bar:nth-child(5){animation-delay:.8s;}
+    body { background: linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%); font-family:'Open Sans',sans-serif;
+           margin:0;padding:0;display:flex;flex-direction:column;
+           align-items:center;justify-content:center;height:100vh;overflow:hidden; }
+    header { font-family:'Fredoka One',cursive;font-size:3rem;color:#fff;
+             text-shadow:2px 2px #ff6363;margin-bottom:10px;text-align:center; }
+    header small{font-size:1rem;opacity:.8;}
+    .content-wrapper{background:#fff;border-radius:20px;
+                     padding:30px;box-shadow:0 10px 20px rgba(0,0,0,0.2);
+                     text-align:center;width:80%;max-width:600px;}
+    .play-button{background:#ff6363;color:#fff;border:none;
+                 padding:10px 20px;border-radius:30px;font-weight:600;
+                 cursor:pointer;box-shadow:0 4px 10px rgba(255,99,99,0.4);
+                 transition:transform .2s,box-shadow .2s;font-size:.9rem;}
+    .play-button:hover{transform:scale(1.1);box-shadow:0 6px 15px rgba(255,99,99,0.6);}
+    #qr-reader{width:300px;margin:0 auto;}
+    .music-bars{display:flex;justify-content:center;align-items:flex-end;margin-top:20px;}
+    .bar{width:10px;height:40px;margin:0 5px;background:#ff9a9e;animation:bounce 1s infinite alternate;}
+    .bar:nth-child(2){animation-delay:.2s;} .bar:nth-child(3){animation-delay:.4s;}
+    .bar:nth-child(4){animation-delay:.6s;} .bar:nth-child(5){animation-delay:.8s;}
     @keyframes bounce{0%{height:40px;}100%{height:100px;}}
-    .dancing-viki {
-      position:absolute; bottom:10px; right:10px;
-      width:120px; animation:flip-dance 1.5s infinite;
-    }
-    @keyframes flip-dance{
-      0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);}
-    }
+    .dancing-viki{position:absolute;bottom:10px;right:10px;width:120px;animation:flip-dance 1.5s infinite;}
+    @keyframes flip-dance{0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);}}
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v1.9</small></header>
+  <header>Hitster Versión Viki <small>v1.10</small></header>
   <div class="content-wrapper">
 
-    <!-- Paso 1: Botón inicial -->
+    <!-- 1) Iniciar escaneo -->
     <button id="start-button" class="play-button">Iniciar escaneo</button>
 
-    <!-- Paso 2: Cámara (oculta al inicio) -->
+    <!-- 2) Zona de cámara -->
     <div id="scanner-container" style="display:none;">
       <div id="qr-reader"></div>
-      <p style="font-size:0.8rem; color:#666;">Apunta al QR para capturar</p>
+      <p style="font-size:.8rem;color:#666;">Apunta al QR</p>
     </div>
 
-    <!-- Paso 3: Botón de reproducción -->
-    <div id="play-container" style="display:none; margin-top:15px;">
+    <!-- 3) Botón “Reproducir canción” -->
+    <div id="play-container" style="display:none;margin-top:15px;">
       <button id="play-button" class="play-button">Reproducir canción</button>
     </div>
 
-    <!-- Paso 4: Botón para escanear otra -->
-    <div id="again-container" style="display:none; margin-top:15px;">
+    <!-- 4) Botón “Escanear otra” -->
+    <div id="again-container" style="display:none;margin-top:15px;">
       <button id="scan-again" class="play-button">Escanear otra canción</button>
     </div>
-    
+
   </div>
 
   <img src="https://github.com/virabbia/mystery-song-player/raw/main/vikibailarina.png"
        alt="Dancing Viki" class="dancing-viki">
 
   <script>
-    const VERSION   = 'v1.9';
+    const VERSION   = 'v1.10';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
-    console.log(`[${VERSION}] Cargando página:`, location.href);
+    console.log(`[${VERSION}] Página cargada:`, location.href);
 
-    // Elementos
-    const startBtn    = document.getElementById('start-button');
-    const scannerDiv  = document.getElementById('scanner-container');
-    const playDiv     = document.getElementById('play-container');
-    const againDiv    = document.getElementById('again-container');
-    const playBtn     = document.getElementById('play-button');
-    const scanAgainBtn= document.getElementById('scan-again');
+    const startBtn     = document.getElementById('start-button');
+    const scannerDiv   = document.getElementById('scanner-container');
+    const playDiv      = document.getElementById('play-container');
+    const againDiv     = document.getElementById('again-container');
+    const playBtn      = document.getElementById('play-button');
+    const scanAgainBtn = document.getElementById('scan-again');
     let html5QrCode, lastTrackUri;
 
-    // 1) Comenzar escaneo
+    // 1) Empezar escaneo
     startBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] iniciar escaneo`);
       startBtn.style.display   = 'none';
@@ -122,48 +89,46 @@
 
     // 2) Configurar lector
     function initScanner() {
-      console.log(`[${VERSION}] initScanner()`);
       html5QrCode = new Html5Qrcode("qr-reader");
       Html5Qrcode.getCameras()
         .then(cameras => {
           if (!cameras.length) throw new Error('No hay cámaras');
-          console.log(`[${VERSION}] Cámaras:`, cameras);
+          console.log(`[${VERSION}] Cámaras detectadas:`, cameras);
+          // Escanea TODO el vídeo (sin qrbox fijo) y usa detector nativo si existe
           return html5QrCode.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
+            { fps: 10, useBarCodeDetectorIfSupported: true },
             onScanSuccess,
             err => console.warn(`[${VERSION}] escaneo fallo:`, err)
           );
         })
         .catch(err => {
           console.error(`[${VERSION}] ERROR escáner:`, err);
-          alert('No pude acceder a la cámara:\n'+ err.message);
+          alert('No pude acceder a la cámara:\n' + err.message);
         });
     }
 
-    // 3) Al leer QR
+    // 3) Al detectar QR
     function onScanSuccess(decoded) {
       console.log(`[${VERSION}] QR crudo:`, decoded);
       html5QrCode.stop()
         .then(() => html5QrCode.clear())
         .then(() => {
           scannerDiv.style.display = 'none';
-          // extraer ID de playlist
+          // Extraer el ID correcto
           const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
           if (!m) {
             alert('QR inválido para Spotify');
-            return console.warn(`[${VERSION}] QR inválido:`, decoded);
+            return;
           }
           lastTrackUri = `spotify:track:${m[1]}`;
-          // mostrar botón reproducir
+          // Mostrar “Reproducir canción”
           playDiv.style.display = 'block';
         })
-        .catch(e => {
-          console.error(`[${VERSION}] fallo al parar/limpiar scanner:`, e);
-        });
+        .catch(e => console.error(`[${VERSION}] fallo stop/clear:`, e));
     }
 
-    // 4) Reproducir al click
+    // 4) Reproducir
     playBtn.addEventListener('click', async () => {
       console.log(`[${VERSION}] playTrack →`, lastTrackUri);
       try {
@@ -171,7 +136,7 @@
         if (!token || !location.hash.includes('#authenticated')) {
           console.log(`[${VERSION}] autenticando`);
           localStorage.setItem('trackId', lastTrackUri.split(':').pop());
-          location.href = 
+          location.href =
             `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
             `&redirect_uri=${encodeURIComponent(location.origin + '/callback.html')}` +
             `&scope=user-modify-playback-state&response_type=token`;
@@ -187,15 +152,15 @@
         againDiv.style.display = 'block';
       } catch (e) {
         console.error(`[${VERSION}] ERROR playTrack:`, e);
-        alert('Error al reproducir:\n'+ e.message);
+        alert('Error al reproducir:\n' + e.message);
       }
     });
 
     // 5) Escanear otra
     scanAgainBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] scan again`);
-      againDiv.style.display   = 'none';
-      startBtn.style.display   = 'block';
+      againDiv.style.display = 'none';
+      startBtn.style.display = 'block';
     });
   </script>
 </body>
