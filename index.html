@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hitster Versión Viki v2.0</title>
+  <title>Hitster Versión Viki v2.1</title>
 
   <!-- html5‑qrcode -->
   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
@@ -26,14 +26,14 @@
                    box-shadow:0 4px 10px rgba(255,99,99,0.4);
                    transition:transform .2s,box-shadow .2s;font-size:.9rem; }
     .play-button:hover { transform:scale(1.1); box-shadow:0 6px 15px rgba(255,99,99,0.6); }
-    #qr-reader { width:300px; margin:0 auto; }
+    #qr-reader { width:300px; margin:20px auto; }
     .dancing-viki { position:absolute; bottom:10px; right:10px;
                     width:120px; animation:flip-dance 1.5s infinite; }
     @keyframes flip-dance { 0%,100%{transform:scaleX(1);}50%{transform:scaleX(-1);} }
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v2.0</small></header>
+  <header>Hitster Versión Viki <small>v2.1</small></header>
   <div class="content-wrapper">
     <button id="start-button" class="play-button">Iniciar escaneo</button>
 
@@ -55,7 +55,7 @@
        alt="Dancing Viki" class="dancing-viki">
 
   <script>
-    const VERSION   = 'v2.0';
+    const VERSION   = 'v2.1';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada: ${location.href}`);
 
@@ -67,7 +67,7 @@
     const scanAgainBtn = document.getElementById('scan-again');
     let html5QrCode, lastTrackUri;
 
-    // Genera el callback correcto donde esté tu index.html
+    // Calculamos dinámicamente la URI de callback
     const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
     // 1) Iniciar escaneo
@@ -80,12 +80,13 @@
       initScanner();
     });
 
-    // 2) Iniciar lector (sin qrbox fijo)
+    // 2) Configurar lector
     function initScanner() {
       html5QrCode = new Html5Qrcode('qr-reader');
       Html5Qrcode.getCameras()
         .then(cameras => {
           if (!cameras.length) throw new Error('No hay cámaras disponibles');
+          console.log(`[${VERSION}] cámaras detectadas:`, cameras);
           return html5QrCode.start(
             { facingMode: 'environment' },
             { fps: 10, useBarCodeDetectorIfSupported: true },
@@ -105,7 +106,6 @@
         .then(() => html5QrCode.clear())
         .then(() => {
           scannerDiv.style.display = 'none';
-          // extraer ID
           const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
           if (!m) {
             alert('QR inválido para Spotify');
@@ -122,6 +122,8 @@
       console.log(`[${VERSION}] playTrack →`, lastTrackUri);
       let token = localStorage.getItem('spotifyAccessToken');
       if (!token || !location.hash.includes('#authenticated')) {
+        // Logueamos la URI exacta que usamos
+        console.log(`[${VERSION}] redirectUri →`, redirectUri);
         console.log(`[${VERSION}] autenticando`);
         localStorage.setItem('trackId', lastTrackUri.split(':').pop());
         window.location.href =
@@ -149,8 +151,8 @@
     // 5) Escanear otra
     scanAgainBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] escanear otra`);
-      againDiv.style.display   = 'none';
-      startBtn.style.display   = 'block';
+      againDiv.style.display = 'none';
+      startBtn.style.display = 'block';
     });
   </script>
 </body>
