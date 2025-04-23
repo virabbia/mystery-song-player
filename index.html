@@ -1,164 +1,163 @@
-  <!-- … justo antes de cerrar </body> … -->
-  <script>
-    const VERSION   = 'v2.4-debug';
-    const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
-    console.log(`[${VERSION}] Página cargada:`, location.href);
+<script>
+  const VERSION   = 'v2.4-debug';
+  const CLIENT_ID = '0e507d976bac454da965c22fb';
+  console.log(`[${VERSION}] Página cargada:`, location.href);
 
-    // Elemento para mostrar estado en pantalla
-    const wrapper  = document.querySelector('.content-wrapper');
-    const statusEl = document.createElement('p');
-    statusEl.id      = 'status';
-    statusEl.style   = 'font-size:.9rem;color:#333;margin:10px 0;';
-    statusEl.textContent = '💡 Listo para escanear';
-    wrapper.prepend(statusEl);
+  // Intentamos engancharnos al .content-wrapper, si no existe, fallback a body
+  const wrapper  = document.querySelector('.content-wrapper') || document.body;
+  // Elemento de estado
+  const statusEl = document.createElement('p');
+  statusEl.id      = 'status';
+  statusEl.style   = 'font-size:.9rem;color:#333;margin:10px 0;';
+  statusEl.textContent = '💡 Listo para escanear';
+  // Inserción segura
+  if (wrapper.prepend) wrapper.prepend(statusEl);
+  else wrapper.insertBefore(statusEl, wrapper.firstChild);
 
-    function setStatus(msg) {
-      console.log(`[${VERSION}] ${msg}`);
-      statusEl.textContent = msg;
-    }
+  function setStatus(msg) {
+    console.log(`[${VERSION}] ${msg}`);
+    statusEl.textContent = msg;
+  }
 
-    // Referencias al DOM
-    const startBtn     = document.getElementById('start-button');
-    const scannerDiv   = document.getElementById('scanner-container');
-    const playDiv      = document.getElementById('play-container');
-    const againDiv     = document.getElementById('again-container');
-    const playBtn      = document.getElementById('play-button');
-    const scanAgainBtn = document.getElementById('scan-again');
-    let html5QrCode, lastTrackUri;
+  // Referencias DOM
+  const startBtn     = document.getElementById('start-button');
+  const scannerDiv   = document.getElementById('scanner-container');
+  const playDiv      = document.getElementById('play-container');
+  const againDiv     = document.getElementById('again-container');
+  const playBtn      = document.getElementById('play-button');
+  const scanAgainBtn = document.getElementById('scan-again');
+  let html5QrCode, lastTrackUri;
 
-    // URI exacta de callback
-    const redirectUri = `${location.origin}${location.pathname}callback.html`;
+  // URI de callback exacta
+  const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
-    // 0) Modo post-auth al cargar
-    window.addEventListener('load', () => {
-      setStatus('Verificando callback de autenticación…');
-      const params     = new URLSearchParams(location.search);
-      const trackParam = params.get('track');
-      if (trackParam && location.hash.includes('#authenticated')) {
-        lastTrackUri = trackParam;
-        setStatus(`✔ Track detectado: ${lastTrackUri}`);
-        startBtn.style.display   = 'none';
-        scannerDiv.style.display = 'none';
-        playDiv.style.display    = 'block';
-      } else {
-        setStatus('💡 Listo para iniciar escaneo');
-      }
-    });
-
-    // 1) Iniciar escaneo
-    startBtn.addEventListener('click', () => {
-      setStatus('🔍 Iniciando escaneo de QR…');
+  // 0) Post-auth al cargar
+  window.addEventListener('load', () => {
+    setStatus('Verificando callback de autenticación…');
+    const params     = new URLSearchParams(location.search);
+    const trackParam = params.get('track');
+    if (trackParam && location.hash.includes('#authenticated')) {
+      lastTrackUri = trackParam;
+      setStatus(`✔ Track detectado: ${lastTrackUri}`);
       startBtn.style.display   = 'none';
-      playDiv.style.display    = 'none';
-      againDiv.style.display   = 'none';
-      scannerDiv.style.display = 'block';
-      initScanner();
-    });
-
-    // 2) Configurar lector
-    function initScanner() {
-      setStatus('📷 Solicitando acceso a cámara…');
-      html5QrCode = new Html5Qrcode('qr-reader');
-      Html5Qrcode.getCameras()
-        .then(cams => {
-          setStatus(`📷 ${cams.length} cámaras disponibles, arrancando lector`);
-          console.log(`[${VERSION}] Cámaras:`, cams);
-          return html5QrCode.start(
-            { facingMode: 'environment' },
-            { fps: 10, useBarCodeDetectorIfSupported: true },
-            onScanSuccess
-          );
-        })
-        .catch(err => {
-          console.error(`[${VERSION}] ERROR escáner:`, err);
-          setStatus(`❌ Error cámara: ${err.message}`);
-          alert(`No pude acceder a la cámara:\n${err.message}`);
-        });
+      scannerDiv.style.display = 'none';
+      playDiv.style.display    = 'block';
+    } else {
+      setStatus('💡 Listo para iniciar escaneo');
     }
+  });
 
-    // 3) Al detectar QR
-    function onScanSuccess(decoded) {
-      setStatus(`✅ QR detectado: ${decoded}`);
-      console.log(`[${VERSION}] QR decodificado:`, decoded);
-      html5QrCode.stop()
-        .then(() => html5QrCode.clear())
-        .then(() => {
-          const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
-          if (!m) {
-            setStatus('❌ QR inválido para Spotify');
-            alert('QR inválido para Spotify');
-            return;
-          }
-          lastTrackUri = `spotify:track:${m[1]}`;
-          setStatus(`✔ Track válido: ${lastTrackUri}`);
-          playDiv.style.display = 'block';
-        })
-        .catch(err => {
-          console.error(`[${VERSION}] fallo stop/clear:`, err);
-          setStatus(`❌ Error deteniendo escáner: ${err.message}`);
-        });
-    }
+  // 1) Iniciar escaneo
+  startBtn.addEventListener('click', () => {
+    setStatus('🔍 Iniciando escaneo de QR…');
+    startBtn.style.display   = 'none';
+    playDiv.style.display    = 'none';
+    againDiv.style.display   = 'none';
+    scannerDiv.style.display = 'block';
+    initScanner();
+  });
 
-    // 4) Reproducir
-    playBtn.addEventListener('click', async () => {
-      setStatus(`🎧 Preparando reproducción de ${lastTrackUri}`);
-      console.log(`[${VERSION}] playTrack →`, lastTrackUri);
-      const token = localStorage.getItem('spotifyAccessToken');
-      if (!token || !location.hash.includes('#authenticated')) {
-        setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
-        localStorage.setItem('trackId', lastTrackUri.split(':').pop());
-        return window.location.href =
-          `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&scope=user-modify-playback-state&response_type=token`;
-      }
-      try {
-        setStatus('⌛ Obteniendo dispositivos Spotify…');
-        const devRes  = await fetch('https://api.spotify.com/v1/me/player/devices', {
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        setStatus(`📡 Dispositivos HTTP status: ${devRes.status}`);
-        const devJson = await devRes.json();
-        console.log(devJson);
-        setStatus(`📡 Dispositivos encontrados: ${devJson.devices.length}`);
-        if (!devJson.devices.length) {
-          setStatus('❌ No hay dispositivos activos');
-          alert('Activa playback en Spotify Web o App antes de reproducir.');
+  // 2) Configurar lector
+  function initScanner() {
+    setStatus('📷 Solicitando acceso a cámara…');
+    html5QrCode = new Html5Qrcode('qr-reader');
+    Html5Qrcode.getCameras()
+      .then(cams => {
+        setStatus(`📷 ${cams.length} cámaras disponibles, arrancando lector`);
+        console.log(`[${VERSION}] Cámaras:`, cams);
+        return html5QrCode.start(
+          { facingMode: 'environment' },
+          { fps: 10, useBarCodeDetectorIfSupported: true },
+          onScanSuccess
+        );
+      })
+      .catch(err => {
+        console.error(`[${VERSION}] ERROR escáner:`, err);
+        setStatus(`❌ Error cámara: ${err.message}`);
+        alert(`No pude acceder a la cámara:\n${err.message}`);
+      });
+  }
+
+  // 3) Detectar QR
+  function onScanSuccess(decoded) {
+    setStatus(`✅ QR detectado: ${decoded}`);
+    console.log(`[${VERSION}] QR decodificado:`, decoded);
+    html5QrCode.stop()
+      .then(() => html5QrCode.clear())
+      .then(() => {
+        const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
+        if (!m) {
+          setStatus('❌ QR inválido para Spotify');
+          alert('QR inválido para Spotify');
           return;
         }
-        const deviceId = devJson.devices[0].id;
-        setStatus(`✔ Usando device_id: ${deviceId}`);
-        console.log(`[${VERSION}] usando device_id:`, deviceId);
+        lastTrackUri = `spotify:track:${m[1]}`;
+        setStatus(`✔ Track válido: ${lastTrackUri}`);
+        playDiv.style.display = 'block';
+      })
+      .catch(err => {
+        console.error(`[${VERSION}] fallo stop/clear:`, err);
+        setStatus(`❌ Error deteniendo escáner: ${err.message}`);
+      });
+  }
 
-        setStatus('▶ Enviando comando play a la API Spotify…');
-        const playRes = await fetch(
-          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
-          {
-            method: 'PUT',
-            headers: { Authorization: 'Bearer ' + token },
-            body: JSON.stringify({ uris: [ lastTrackUri ] })
-          }
-        );
-        setStatus(`▶ Play HTTP status: ${playRes.status}`);
-        if (!playRes.ok) {
-          const errText = await playRes.text();
-          throw new Error(`HTTP ${playRes.status}: ${errText}`);
-        }
-        setStatus('🎉 Reproducción iniciada');
-        playDiv.style.display  = 'none';
-        againDiv.style.display = 'block';
-
-      } catch (e) {
-        console.error(`[${VERSION}] ERROR playTrack:`, e);
-        setStatus(`❌ Error playTrack: ${e.message}`);
-        alert(`Error al reproducir:\n${e.message}`);
+  // 4) Reproducir
+  playBtn.addEventListener('click', async () => {
+    setStatus(`🎧 Preparando reproducción de ${lastTrackUri}`);
+    const token = localStorage.getItem('spotifyAccessToken');
+    if (!token || !location.hash.includes('#authenticated')) {
+      setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
+      localStorage.setItem('trackId', lastTrackUri.split(':').pop());
+      return window.location.href =
+        `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&scope=user-modify-playback-state&response_type=token`;
+    }
+    try {
+      setStatus('⌛ Obteniendo dispositivos Spotify…');
+      const devRes  = await fetch('https://api.spotify.com/v1/me/player/devices', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      setStatus(`📡 Dispositivos HTTP status: ${devRes.status}`);
+      const devJson = await devRes.json();
+      setStatus(`📡 Dispositivos encontrados: ${devJson.devices.length}`);
+      if (!devJson.devices.length) {
+        setStatus('❌ No hay dispositivos activos');
+        alert('Activa playback en Spotify Web o App antes de reproducir.');
+        return;
       }
-    });
+      const deviceId = devJson.devices[0].id;
+      setStatus(`✔ Usando device_id: ${deviceId}`);
 
-    // 5) Escanear otra canción
-    scanAgainBtn.addEventListener('click', () => {
-      setStatus('💡 Listo para escanear otra canción');
-      againDiv.style.display = 'none';
-      startBtn.style.display = 'block';
-    });
-  </script>
+      setStatus('▶ Enviando comando play a la API Spotify…');
+      const playRes = await fetch(
+        `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ uris: [ lastTrackUri ] })
+        }
+      );
+      setStatus(`▶ Play HTTP status: ${playRes.status}`);
+      if (!playRes.ok) {
+        const errText = await playRes.text();
+        throw new Error(`HTTP ${playRes.status}: ${errText}`);
+      }
+      setStatus('🎉 Reproducción iniciada');
+      playDiv.style.display  = 'none';
+      againDiv.style.display = 'block';
+
+    } catch (e) {
+      console.error(`[${VERSION}] ERROR playTrack:`, e);
+      setStatus(`❌ Error playTrack: ${e.message}`);
+      alert(`Error al reproducir:\n${e.message}`);
+    }
+  });
+
+  // 5) Escanear otra
+  scanAgainBtn.addEventListener('click', () => {
+    setStatus('💡 Listo para escanear otra canción');
+    againDiv.style.display = 'none';
+    startBtn.style.display = 'block';
+  });
+</script>
