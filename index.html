@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hitster Versión Viki v2.1</title>
+  <title>Hitster Versión Viki v2.3</title>
 
-  <!-- html5‑qrcode -->
+  <!-- html5-qrcode -->
   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
 
@@ -33,19 +33,24 @@
   </style>
 </head>
 <body>
-  <header>Hitster Versión Viki <small>v2.1</small></header>
+  <header>Hitster Versión Viki <small>v2.3</small></header>
   <div class="content-wrapper">
+
+    <!-- Botón inicial -->
     <button id="start-button" class="play-button">Iniciar escaneo</button>
 
+    <!-- Contenedor de cámara -->
     <div id="scanner-container" style="display:none; margin-top:20px;">
       <div id="qr-reader"></div>
       <p style="font-size:.8rem;color:#666;">Apunta al QR</p>
     </div>
 
+    <!-- Botón reproducir -->
     <div id="play-container" style="display:none; margin-top:15px;">
       <button id="play-button" class="play-button">Reproducir canción</button>
     </div>
 
+    <!-- Botón re-scan -->
     <div id="again-container" style="display:none; margin-top:15px;">
       <button id="scan-again" class="play-button">Escanear otra canción</button>
     </div>
@@ -55,9 +60,9 @@
        alt="Dancing Viki" class="dancing-viki">
 
   <script>
-    const VERSION   = 'v2.1';
+    const VERSION   = 'v2.3';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
-    console.log(`[${VERSION}] Página cargada: ${location.href}`);
+    console.log(`[${VERSION}] Página cargada:`, location.href);
 
     const startBtn     = document.getElementById('start-button');
     const scannerDiv   = document.getElementById('scanner-container');
@@ -67,10 +72,24 @@
     const scanAgainBtn = document.getElementById('scan-again');
     let html5QrCode, lastTrackUri;
 
-    // Calculamos dinámicamente la URI de callback
+    // URI de callback exacta
     const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
-    // 1) Iniciar escaneo
+    // --- 0) Auto-modo post-auth ---
+    window.addEventListener('load', () => {
+      const params = new URLSearchParams(location.search);
+      const trackParam = params.get('track');
+      if (trackParam && location.hash.includes('#authenticated')) {
+        // Ya pasamos por callback, saltamos escaneo
+        lastTrackUri = trackParam;
+        console.log(`[${VERSION}] Auto-detect track desde URL:`, lastTrackUri);
+        startBtn.style.display   = 'none';
+        scannerDiv.style.display = 'none';
+        playDiv.style.display    = 'block';
+      }
+    });
+
+    // --- 1) Iniciar escaneo ---
     startBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] iniciar escaneo`);
       startBtn.style.display   = 'none';
@@ -80,12 +99,11 @@
       initScanner();
     });
 
-    // 2) Configurar lector
+    // --- 2) Configurar lector ---
     function initScanner() {
       html5QrCode = new Html5Qrcode('qr-reader');
       Html5Qrcode.getCameras()
         .then(cameras => {
-          if (!cameras.length) throw new Error('No hay cámaras disponibles');
           console.log(`[${VERSION}] cámaras detectadas:`, cameras);
           return html5QrCode.start(
             { facingMode: 'environment' },
@@ -99,7 +117,7 @@
         });
     }
 
-    // 3) Al detectar QR
+    // --- 3) Al detectar QR ---
     function onScanSuccess(decoded) {
       console.log(`[${VERSION}] QR detectado:`, decoded);
       html5QrCode.stop()
@@ -117,29 +135,42 @@
         .catch(err => console.error(`[${VERSION}] fallo stop/clear:`, err));
     }
 
-    // 4) Reproducir
+    // --- 4) Reproducir ---
     playBtn.addEventListener('click', async () => {
       console.log(`[${VERSION}] playTrack →`, lastTrackUri);
       let token = localStorage.getItem('spotifyAccessToken');
       if (!token || !location.hash.includes('#authenticated')) {
-        // Logueamos la URI exacta que usamos
         console.log(`[${VERSION}] redirectUri →`, redirectUri);
-        console.log(`[${VERSION}] autenticando`);
+        console.log(`[${VERSION}] autenticando…`);
         localStorage.setItem('trackId', lastTrackUri.split(':').pop());
-        window.location.href =
+        return window.location.href =
           `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
           `&redirect_uri=${encodeURIComponent(redirectUri)}` +
           `&scope=user-modify-playback-state&response_type=token`;
-        return;
       }
       try {
-        const res = await fetch('https://api.spotify.com/v1/me/player/play', {
-          method: 'PUT',
-          headers: { Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ uris: [ lastTrackUri ] })
+        // Listar dispositivos
+        const devRes = await fetch('https://api.spotify.com/v1/me/player/devices', {
+          headers: { Authorization: 'Bearer ' + token }
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        console.log(`[${VERSION}] enviado a reproducir (HTTP ${res.status})`);
+        const { devices } = await devRes.json();
+        if (!devices.length) {
+          alert('Activa playback en Spotify Web o App antes de reproducir.');
+          return;
+        }
+        const deviceId = devices[0].id;
+        console.log(`[${VERSION}] usando device_id:`, deviceId);
+        // Llamada a play con device_id
+        const playRes = await fetch(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ uris: [ lastTrackUri ] })
+          }
+        );
+        if (!playRes.ok) throw new Error(`HTTP ${playRes.status}`);
+        console.log(`[${VERSION}] reproducción iniciada (HTTP ${playRes.status})`);
         playDiv.style.display  = 'none';
         againDiv.style.display = 'block';
       } catch (e) {
@@ -148,7 +179,7 @@
       }
     });
 
-    // 5) Escanear otra
+    // --- 5) Escanear otra ---
     scanAgainBtn.addEventListener('click', () => {
       console.log(`[${VERSION}] escanear otra`);
       againDiv.style.display = 'none';
