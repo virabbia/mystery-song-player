@@ -141,7 +141,8 @@
         return window.location.href =
           `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
           `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&scope=user-modify-playback-state&response_type=token`;
+          `&scope=user-modify-playback-state%20user-read-playback-state` +
+          `&response_type=token`;
       }
       try {
         setStatus('⌛ Obteniendo dispositivos Spotify…');
@@ -149,11 +150,17 @@
           headers: { Authorization: 'Bearer ' + token }
         });
         const devJson = await devRes.json();
+
+        if (!devJson.devices || !Array.isArray(devJson.devices)) {
+          throw new Error("Token inválido o no autorizado (401)");
+        }
+
         if (!devJson.devices.length) {
           setStatus('❌ No hay dispositivos activos');
           alert('Activa playback en Spotify Web o App antes de reproducir.');
           return;
         }
+
         const deviceId = devJson.devices[0].id;
         setStatus(`✔ Usando device_id: ${deviceId}`);
         const playRes = await fetch(
