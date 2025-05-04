@@ -24,6 +24,17 @@
       text-shadow: 2px 2px #00000055;
     }
 
+    #version-tag {
+      position: fixed;
+      top: 10px;
+      right: 15px;
+      font-size: 0.9rem;
+      background: #00000044;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
     #status {
       font-size: 1.2rem;
       margin: 20px 0;
@@ -60,23 +71,27 @@
       padding: 10px;
     }
 
-    /* Viki dancing in bottom right corner */
+    /* Viki dancing in bottom right corner with mirror flip */
     .viki-dancer {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 100px;
-      animation: dance 2s infinite ease-in-out;
+      animation: dance 1.8s infinite ease-in-out;
       z-index: 1000;
+      transform-origin: center;
     }
 
     @keyframes dance {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(-20px); }
+      0% { transform: scaleX(1); }
+      50% { transform: scaleX(-1); }
+      100% { transform: scaleX(1); }
     }
   </style>
 </head>
 <body>
+
+  <div id="version-tag">v2.5</div>
 
   <h1>🎧 Vikster</h1>
   <p id="status">💡 Listo para escanear</p>
@@ -99,8 +114,8 @@
   <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
 
   <script>
-    const VERSION   = 'v2.4-debug';
-    const CLIENT_ID = '0e507d976bac454da965c22fb';
+    const VERSION   = 'v2.5';
+    const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada:`, location.href);
 
     const statusEl       = document.getElementById('status');
@@ -120,6 +135,60 @@
       statusEl.textContent = msg;
     }
 
+    async function playTrack() {
+      setStatus(`🎧 Preparando reproducción de ${lastTrackUri}`);
+      const token = localStorage.getItem('spotifyAccessToken');
+      if (!token || !location.hash.includes('#authenticated')) {
+        setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
+        localStorage.setItem('trackId', lastTrackUri.split(':').pop());
+        return window.location.href =
+          `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&scope=user-modify-playback-state%20user-read-playback-state` +
+          `&response_type=token`;
+      }
+
+      try {
+        setStatus('⌛ Obteniendo dispositivos Spotify…');
+        const devRes  = await fetch('https://api.spotify.com/v1/me/player/devices', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const devJson = await devRes.json();
+
+        if (!devJson.devices || !Array.isArray(devJson.devices)) {
+          throw new Error("Token inválido o no autorizado (401)");
+        }
+
+        if (!devJson.devices.length) {
+          setStatus('❌ No hay dispositivos activos');
+          alert('Activa playback en Spotify Web o App antes de reproducir.');
+          return;
+        }
+
+        const deviceId = devJson.devices[0].id;
+        setStatus(`✔ Usando device_id: ${deviceId}`);
+        const playRes = await fetch(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ uris: [ lastTrackUri ] })
+          }
+        );
+        if (!playRes.ok) {
+          const errText = await playRes.text();
+          throw new Error(`HTTP ${playRes.status}: ${errText}`);
+        }
+        setStatus('🎉 Reproducción iniciada');
+        playDiv.style.display  = 'none';
+        againDiv.style.display = 'block';
+      } catch (e) {
+        console.error(`[${VERSION}] ERROR playTrack:`, e);
+        setStatus(`❌ Error al reproducir: ${e.message}`);
+        alert(`Error al reproducir:\n${e.message}`);
+      }
+    }
+
     window.addEventListener('load', () => {
       setStatus('Verificando callback de autenticación…');
       const params     = new URLSearchParams(location.search);
@@ -129,7 +198,8 @@
         setStatus(`✔ Track detectado: ${lastTrackUri}`);
         startBtn.style.display   = 'none';
         scannerDiv.style.display = 'none';
-        playDiv.style.display    = 'block';
+        playDiv.style.display    = 'none'; // ocultamos botón play
+        playTrack(); // reproducimos automáticamente
       } else {
         setStatus('💡 Listo para iniciar escaneo');
       }
@@ -176,66 +246,15 @@
           }
           lastTrackUri = `spotify:track:${m[1]}`;
           setStatus(`✔ Track válido: ${lastTrackUri}`);
-          playDiv.style.display = 'block';
+          playDiv.style.display = 'none';
+          scannerDiv.style.display = 'none';
+          playTrack(); // 🚀 reproduce automáticamente
         })
         .catch(err => {
           console.error(`[${VERSION}] fallo stop/clear:`, err);
           setStatus(`❌ Error deteniendo escáner: ${err.message}`);
         });
     }
-
-    playBtn.addEventListener('click', async () => {
-      setStatus(`🎧 Preparando reproducción de ${lastTrackUri}`);
-      const token = localStorage.getItem('spotifyAccessToken');
-      if (!token || !location.hash.includes('#authenticated')) {
-        setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
-        localStorage.setItem('trackId', lastTrackUri.split(':').pop());
-        return window.location.href =
-          `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          `&scope=user-modify-playback-state%20user-read-playback-state` +
-          `&response_type=token`;
-      }
-      try {
-        setStatus('⌛ Obteniendo dispositivos Spotify…');
-        const devRes  = await fetch('https://api.spotify.com/v1/me/player/devices', {
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        const devJson = await devRes.json();
-
-        if (!devJson.devices || !Array.isArray(devJson.devices)) {
-          throw new Error("Token inválido o no autorizado (401)");
-        }
-
-        if (!devJson.devices.length) {
-          setStatus('❌ No hay dispositivos activos');
-          alert('Activa playback en Spotify Web o App antes de reproducir.');
-          return;
-        }
-
-        const deviceId = devJson.devices[0].id;
-        setStatus(`✔ Usando device_id: ${deviceId}`);
-        const playRes = await fetch(
-          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
-          {
-            method: 'PUT',
-            headers: { Authorization: 'Bearer ' + token },
-            body: JSON.stringify({ uris: [ lastTrackUri ] })
-          }
-        );
-        if (!playRes.ok) {
-          const errText = await playRes.text();
-          throw new Error(`HTTP ${playRes.status}: ${errText}`);
-        }
-        setStatus('🎉 Reproducción iniciada');
-        playDiv.style.display  = 'none';
-        againDiv.style.display = 'block';
-      } catch (e) {
-        console.error(`[${VERSION}] ERROR playTrack:`, e);
-        setStatus(`❌ Error al reproducir: ${e.message}`);
-        alert(`Error al reproducir:\n${e.message}`);
-      }
-    });
 
     scanAgainBtn.addEventListener('click', () => {
       setStatus('💡 Listo para escanear otra canción');
