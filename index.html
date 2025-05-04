@@ -1,4 +1,129 @@
-<!-- (INICIO del body del HTML como ya has hecho) -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Vikster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff9de2, #ff77b3);
+      color: white;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      margin-top: 40px;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px #00000033;
+    }
+
+    h2 {
+      font-weight: 300;
+      font-size: 1.2rem;
+      margin-top: -10px;
+      margin-bottom: 30px;
+    }
+
+    #version-tag {
+      position: fixed;
+      top: 10px;
+      right: 15px;
+      font-size: 0.9rem;
+      background: #ffffff33;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    #status {
+      font-size: 1.2rem;
+      margin: 20px 0;
+    }
+
+    button, #start-button {
+      background: #ffffffcc;
+      border: none;
+      color: #ff3c92;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    button:hover, #start-button:hover {
+      background-color: #ffe4f2;
+      transform: scale(1.05);
+    }
+
+    #scanner-container, #play-container, #again-container {
+      display: none;
+      margin-top: 20px;
+    }
+
+    #qr-reader {
+      width: 300px;
+      max-width: 90vw;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .viki-dancer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 110px;
+      animation: dance 1.8s infinite ease-in-out;
+      z-index: 1000;
+      transform-origin: center;
+    }
+
+    @keyframes dance {
+      0% { transform: scaleX(1); }
+      50% { transform: scaleX(-1); }
+      100% { transform: scaleX(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="version-tag">v2.6-diagnostic</div>
+
+  <h1>🎧 Vikster</h1>
+  <h2>Adivina la canción sin verla — ¡con ritmo y estilo!</h2>
+  <p id="status">💡 Listo para escanear</p>
+
+  <div id="start-button">📸 Escanear canción</div>
+
+  <div id="scanner-container">
+    <div id="qr-reader"></div>
+  </div>
+
+  <div id="play-container">
+    <button id="play-button">▶ Reproducir canción</button>
+  </div>
+
+  <div id="again-container">
+    <button id="scan-again">🔁 Escanear otra</button>
+  </div>
+
+  <!-- Viki bailarina -->
+  <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
+
+  <!-- SCRIPT al final -->
   <script>
     const VERSION   = 'v2.6-diagnostic';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
@@ -177,4 +302,5 @@
       playTrack();
     });
   </script>
-<!-- (CIERRE del body del HTML) -->
+</body>
+</html>
