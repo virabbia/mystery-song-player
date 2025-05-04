@@ -2,34 +2,83 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mystery Song Player</title>
+  <title>Vikster</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff6ec4, #7873f5);
+      color: white;
       text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
-    #start-button, #play-button, #scan-again {
-      padding: 10px 20px;
+
+    h1 {
+      font-size: 3rem;
+      margin-top: 40px;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px #00000055;
+    }
+
+    #status {
+      font-size: 1.2rem;
+      margin: 20px 0;
+    }
+
+    button, #start-button {
+      background-color: #ffffff22;
+      border: 2px solid #fff;
+      color: white;
+      padding: 12px 24px;
       font-size: 1rem;
+      border-radius: 12px;
       cursor: pointer;
       margin: 10px;
+      transition: all 0.3s ease;
     }
+
+    button:hover, #start-button:hover {
+      background-color: #fff;
+      color: #333;
+    }
+
     #scanner-container, #play-container, #again-container {
       display: none;
       margin-top: 20px;
     }
+
     #qr-reader {
       width: 300px;
+      max-width: 90vw;
       margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    /* Viki dancing in bottom right corner */
+    .viki-dancer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      animation: dance 2s infinite ease-in-out;
+      z-index: 1000;
+    }
+
+    @keyframes dance {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-20px); }
     }
   </style>
 </head>
 <body>
 
-  <h1>🎵 Mystery Song Player</h1>
+  <h1>🎧 Vikster</h1>
   <p id="status">💡 Listo para escanear</p>
 
   <div id="start-button">🎯 Escanear canción</div>
@@ -46,9 +95,12 @@
     <button id="scan-again">🔁 Escanear otra</button>
   </div>
 
+  <!-- Dancing Viki image -->
+  <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
+
   <script>
     const VERSION   = 'v2.4-debug';
-    const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
+    const CLIENT_ID = '0e507d976bac454da965c22fb';
     console.log(`[${VERSION}] Página cargada:`, location.href);
 
     const statusEl       = document.getElementById('status');
