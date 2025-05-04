@@ -10,18 +10,26 @@
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #ff6ec4, #7873f5);
+      background: linear-gradient(135deg, #ff9de2, #ff77b3);
       color: white;
       text-align: center;
       min-height: 100vh;
       overflow-x: hidden;
+      position: relative;
     }
 
     h1 {
-      font-size: 3rem;
+      font-size: 3.5rem;
       margin-top: 40px;
       letter-spacing: 2px;
-      text-shadow: 2px 2px #00000055;
+      text-shadow: 2px 2px #00000033;
+    }
+
+    h2 {
+      font-weight: 300;
+      font-size: 1.2rem;
+      margin-top: -10px;
+      margin-bottom: 30px;
     }
 
     #version-tag {
@@ -29,7 +37,7 @@
       top: 10px;
       right: 15px;
       font-size: 0.9rem;
-      background: #00000044;
+      background: #ffffff33;
       padding: 4px 10px;
       border-radius: 8px;
       font-weight: bold;
@@ -41,20 +49,22 @@
     }
 
     button, #start-button {
-      background-color: #ffffff22;
-      border: 2px solid #fff;
-      color: white;
-      padding: 12px 24px;
-      font-size: 1rem;
-      border-radius: 12px;
+      background: #ffffffcc;
+      border: none;
+      color: #ff3c92;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 20px;
       cursor: pointer;
       margin: 10px;
       transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
     button:hover, #start-button:hover {
-      background-color: #fff;
-      color: #333;
+      background-color: #ffe4f2;
+      transform: scale(1.05);
     }
 
     #scanner-container, #play-container, #again-container {
@@ -71,12 +81,11 @@
       padding: 10px;
     }
 
-    /* Viki dancing in bottom right corner with mirror flip */
     .viki-dancer {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 100px;
+      width: 110px;
       animation: dance 1.8s infinite ease-in-out;
       z-index: 1000;
       transform-origin: center;
@@ -91,12 +100,13 @@
 </head>
 <body>
 
-  <div id="version-tag">v2.5</div>
+  <div id="version-tag">v2.6</div>
 
   <h1>🎧 Vikster</h1>
+  <h2>Adivina la canción sin verla — ¡con ritmo y estilo!</h2>
   <p id="status">💡 Listo para escanear</p>
 
-  <div id="start-button">🎯 Escanear canción</div>
+  <div id="start-button">📸 Escanear canción</div>
 
   <div id="scanner-container">
     <div id="qr-reader"></div>
@@ -110,11 +120,11 @@
     <button id="scan-again">🔁 Escanear otra</button>
   </div>
 
-  <!-- Dancing Viki image -->
+  <!-- Viki bailarina -->
   <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
 
   <script>
-    const VERSION   = 'v2.5';
+    const VERSION   = 'v2.6';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
     console.log(`[${VERSION}] Página cargada:`, location.href);
 
@@ -189,19 +199,36 @@
       }
     }
 
+    function saveTrackId(uri) {
+      const id = uri.split(':').pop();
+      localStorage.setItem('lastTrackUri', uri);
+      localStorage.setItem('trackId', id);
+    }
+
     window.addEventListener('load', () => {
       setStatus('Verificando callback de autenticación…');
+
       const params     = new URLSearchParams(location.search);
       const trackParam = params.get('track');
+
       if (trackParam && location.hash.includes('#authenticated')) {
         lastTrackUri = trackParam;
+        saveTrackId(lastTrackUri);
         setStatus(`✔ Track detectado: ${lastTrackUri}`);
         startBtn.style.display   = 'none';
         scannerDiv.style.display = 'none';
-        playDiv.style.display    = 'none'; // ocultamos botón play
-        playTrack(); // reproducimos automáticamente
+        playDiv.style.display    = 'none';
+        playTrack();
       } else {
-        setStatus('💡 Listo para iniciar escaneo');
+        // Si hay track guardado, cargarlo automáticamente
+        const storedUri = localStorage.getItem('lastTrackUri');
+        if (storedUri) {
+          lastTrackUri = storedUri;
+          setStatus(`💾 Usando track guardado: ${lastTrackUri}`);
+          playDiv.style.display = 'block';
+        } else {
+          setStatus('💡 Listo para iniciar escaneo');
+        }
       }
     });
 
@@ -245,10 +272,10 @@
             return;
           }
           lastTrackUri = `spotify:track:${m[1]}`;
+          saveTrackId(lastTrackUri);
           setStatus(`✔ Track válido: ${lastTrackUri}`);
-          playDiv.style.display = 'none';
           scannerDiv.style.display = 'none';
-          playTrack(); // 🚀 reproduce automáticamente
+          playTrack();
         })
         .catch(err => {
           console.error(`[${VERSION}] fallo stop/clear:`, err);
@@ -260,6 +287,10 @@
       setStatus('💡 Listo para escanear otra canción');
       againDiv.style.display = 'none';
       startBtn.style.display = 'block';
+    });
+
+    playBtn.addEventListener('click', () => {
+      playTrack();
     });
   </script>
 </body>
