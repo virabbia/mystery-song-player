@@ -1,132 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Vikster</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #ff9de2, #ff77b3);
-      color: white;
-      text-align: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    h1 {
-      font-size: 3.5rem;
-      margin-top: 40px;
-      letter-spacing: 2px;
-      text-shadow: 2px 2px #00000033;
-    }
-
-    h2 {
-      font-weight: 300;
-      font-size: 1.2rem;
-      margin-top: -10px;
-      margin-bottom: 30px;
-    }
-
-    #version-tag {
-      position: fixed;
-      top: 10px;
-      right: 15px;
-      font-size: 0.9rem;
-      background: #ffffff33;
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    #status {
-      font-size: 1.2rem;
-      margin: 20px 0;
-    }
-
-    button, #start-button {
-      background: #ffffffcc;
-      border: none;
-      color: #ff3c92;
-      padding: 14px 28px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      border-radius: 20px;
-      cursor: pointer;
-      margin: 10px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-
-    button:hover, #start-button:hover {
-      background-color: #ffe4f2;
-      transform: scale(1.05);
-    }
-
-    #scanner-container, #play-container, #again-container {
-      display: none;
-      margin-top: 20px;
-    }
-
-    #qr-reader {
-      width: 300px;
-      max-width: 90vw;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      padding: 10px;
-    }
-
-    .viki-dancer {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 110px;
-      animation: dance 1.8s infinite ease-in-out;
-      z-index: 1000;
-      transform-origin: center;
-    }
-
-    @keyframes dance {
-      0% { transform: scaleX(1); }
-      50% { transform: scaleX(-1); }
-      100% { transform: scaleX(1); }
-    }
-  </style>
-</head>
-<body>
-
-  <div id="version-tag">v2.6</div>
-
-  <h1>🎧 Vikster</h1>
-  <h2>Adivina la canción sin verla — ¡con ritmo y estilo!</h2>
-  <p id="status">💡 Listo para escanear</p>
-
-  <div id="start-button">📸 Escanear canción</div>
-
-  <div id="scanner-container">
-    <div id="qr-reader"></div>
-  </div>
-
-  <div id="play-container">
-    <button id="play-button">▶ Reproducir canción</button>
-  </div>
-
-  <div id="again-container">
-    <button id="scan-again">🔁 Escanear otra</button>
-  </div>
-
-  <!-- Viki bailarina -->
-  <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
-
+<!-- (INICIO del body del HTML como ya has hecho) -->
   <script>
-    const VERSION   = 'v2.6';
+    const VERSION   = 'v2.6-diagnostic';
     const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
-    console.log(`[${VERSION}] Página cargada:`, location.href);
+    console.log(`[${VERSION}] 🟩 Página cargada: ${location.href}`);
 
     const statusEl       = document.getElementById('status');
     const startBtn       = document.getElementById('start-button');
@@ -146,8 +22,9 @@
     }
 
     async function playTrack() {
-      setStatus(`🎧 Preparando reproducción de ${lastTrackUri}`);
+      setStatus(`🟨 Intentando reproducir: ${lastTrackUri}`);
       const token = localStorage.getItem('spotifyAccessToken');
+      console.log(`[${VERSION}] 🎫 Token en localStorage: ${token ? 'presente' : 'ausente'}`);
       if (!token || !location.hash.includes('#authenticated')) {
         setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
         localStorage.setItem('trackId', lastTrackUri.split(':').pop());
@@ -159,14 +36,16 @@
       }
 
       try {
-        setStatus('⌛ Obteniendo dispositivos Spotify…');
+        setStatus('📡 Solicitando dispositivos Spotify...');
         const devRes  = await fetch('https://api.spotify.com/v1/me/player/devices', {
           headers: { Authorization: 'Bearer ' + token }
         });
+        console.log(`[${VERSION}] 🌐 Respuesta HTTP /devices: ${devRes.status}`);
         const devJson = await devRes.json();
+        console.log(`[${VERSION}] 📦 devices json:`, devJson);
 
         if (!devJson.devices || !Array.isArray(devJson.devices)) {
-          throw new Error("Token inválido o no autorizado (401)");
+          throw new Error("Respuesta no contiene lista de dispositivos");
         }
 
         if (!devJson.devices.length) {
@@ -176,7 +55,7 @@
         }
 
         const deviceId = devJson.devices[0].id;
-        setStatus(`✔ Usando device_id: ${deviceId}`);
+        setStatus(`▶ Reproduciendo en device_id: ${deviceId}`);
         const playRes = await fetch(
           `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
           {
@@ -185,15 +64,16 @@
             body: JSON.stringify({ uris: [ lastTrackUri ] })
           }
         );
+        console.log(`[${VERSION}] ▶ Respuesta /play: ${playRes.status}`);
         if (!playRes.ok) {
           const errText = await playRes.text();
           throw new Error(`HTTP ${playRes.status}: ${errText}`);
         }
-        setStatus('🎉 Reproducción iniciada');
+        setStatus('🎉 ¡Reproducción iniciada!');
         playDiv.style.display  = 'none';
         againDiv.style.display = 'block';
       } catch (e) {
-        console.error(`[${VERSION}] ERROR playTrack:`, e);
+        console.error(`[${VERSION}] 🟥 ERROR playTrack:`, e);
         setStatus(`❌ Error al reproducir: ${e.message}`);
         alert(`Error al reproducir:\n${e.message}`);
       }
@@ -203,28 +83,31 @@
       const id = uri.split(':').pop();
       localStorage.setItem('lastTrackUri', uri);
       localStorage.setItem('trackId', id);
+      console.log(`[${VERSION}] 💾 Track guardado: ${uri}`);
     }
 
     window.addEventListener('load', () => {
-      setStatus('Verificando callback de autenticación…');
-
+      setStatus('🔎 Verificando si hay track...');
       const params     = new URLSearchParams(location.search);
       const trackParam = params.get('track');
+      const hashOk     = location.hash.includes('#authenticated');
 
-      if (trackParam && location.hash.includes('#authenticated')) {
+      console.log(`[${VERSION}] 🔍 trackParam: ${trackParam}`);
+      console.log(`[${VERSION}] 🔍 hash incluye #authenticated? ${hashOk}`);
+
+      if (trackParam && hashOk) {
         lastTrackUri = trackParam;
         saveTrackId(lastTrackUri);
-        setStatus(`✔ Track detectado: ${lastTrackUri}`);
+        setStatus(`✔ Track detectado desde URL`);
         startBtn.style.display   = 'none';
         scannerDiv.style.display = 'none';
         playDiv.style.display    = 'none';
         playTrack();
       } else {
-        // Si hay track guardado, cargarlo automáticamente
         const storedUri = localStorage.getItem('lastTrackUri');
         if (storedUri) {
           lastTrackUri = storedUri;
-          setStatus(`💾 Usando track guardado: ${lastTrackUri}`);
+          setStatus(`💾 Track guardado detectado: ${lastTrackUri}`);
           playDiv.style.display = 'block';
         } else {
           setStatus('💡 Listo para iniciar escaneo');
@@ -233,7 +116,7 @@
     });
 
     startBtn.addEventListener('click', () => {
-      setStatus('🔍 Iniciando escaneo de QR…');
+      setStatus('📸 Iniciando escaneo de QR…');
       startBtn.style.display   = 'none';
       playDiv.style.display    = 'none';
       againDiv.style.display   = 'none';
@@ -246,7 +129,7 @@
       html5QrCode = new Html5Qrcode('qr-reader');
       Html5Qrcode.getCameras()
         .then(cams => {
-          setStatus(`📷 ${cams.length} cámaras disponibles, arrancando lector`);
+          setStatus(`📷 ${cams.length} cámaras disponibles`);
           return html5QrCode.start(
             { facingMode: 'environment' },
             { fps: 10, useBarCodeDetectorIfSupported: true },
@@ -254,7 +137,7 @@
           );
         })
         .catch(err => {
-          console.error(`[${VERSION}] ERROR escáner:`, err);
+          console.error(`[${VERSION}] 🟥 ERROR escáner:`, err);
           setStatus(`❌ Error cámara: ${err.message}`);
           alert(`No pude acceder a la cámara:\n${err.message}`);
         });
@@ -262,6 +145,7 @@
 
     function onScanSuccess(decoded) {
       setStatus(`✅ QR detectado: ${decoded}`);
+      console.log(`[${VERSION}] 🎯 QR leído: ${decoded}`);
       html5QrCode.stop()
         .then(() => html5QrCode.clear())
         .then(() => {
@@ -273,18 +157,18 @@
           }
           lastTrackUri = `spotify:track:${m[1]}`;
           saveTrackId(lastTrackUri);
-          setStatus(`✔ Track válido: ${lastTrackUri}`);
+          setStatus(`✔ Track del QR: ${lastTrackUri}`);
           scannerDiv.style.display = 'none';
           playTrack();
         })
         .catch(err => {
-          console.error(`[${VERSION}] fallo stop/clear:`, err);
-          setStatus(`❌ Error deteniendo escáner: ${err.message}`);
+          console.error(`[${VERSION}] 🟥 fallo stop/clear:`, err);
+          setStatus(`❌ Error al detener escáner: ${err.message}`);
         });
     }
 
     scanAgainBtn.addEventListener('click', () => {
-      setStatus('💡 Listo para escanear otra canción');
+      setStatus('🔁 Listo para escanear otra canción');
       againDiv.style.display = 'none';
       startBtn.style.display = 'block';
     });
@@ -293,5 +177,4 @@
       playTrack();
     });
   </script>
-</body>
-</html>
+<!-- (CIERRE del body del HTML) -->
