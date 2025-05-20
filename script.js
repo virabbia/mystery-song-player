@@ -1,4 +1,4 @@
-const VERSION = 'v3.0-camfix';
+const VERSION = 'v3.1-trackfix';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -23,6 +23,7 @@ function saveTrackId(uri) {
   const id = uri.split(':').pop();
   localStorage.setItem('lastTrackUri', uri);
   localStorage.setItem('trackId', id);
+  console.log(`[${VERSION}] 💾 Guardado: ${uri}`);
 }
 
 async function playTrack() {
@@ -105,7 +106,7 @@ function initScanner() {
   html5QrCode = new Html5Qrcode('qr-reader');
 
   html5QrCode.start(
-    { facingMode: "environment" }, // ✅ modo seguro
+    { facingMode: "environment" },
     { fps: 10 },
     onScanSuccess
   ).catch(err => {
@@ -119,16 +120,24 @@ window.addEventListener('load', () => {
   const trackParam = params.get('track');
   const hashOk = location.hash.includes('#authenticated');
 
-  if (trackParam && hashOk) {
+  console.log(`[${VERSION}] 🔍 trackParam: ${trackParam}`);
+  console.log(`[${VERSION}] 🔍 hash incluye #authenticated? ${hashOk}`);
+
+  if (trackParam) {
     lastTrackUri = trackParam;
-    saveTrackId(lastTrackUri);
-    playTrack(); // ✅ reproducción automática
+    saveTrackId(lastTrackUri); // 💾 SIEMPRE guardar si viene desde QR
+    if (hashOk) {
+      playTrack(); // ▶️ Reproducir de inmediato si ya está autenticado
+    } else {
+      setStatus("🎶 Canción escaneada, esperando autenticación");
+      playDiv.style.display = 'block';
+    }
   } else {
     const storedUri = localStorage.getItem('lastTrackUri');
     if (storedUri) {
       lastTrackUri = storedUri;
-      playDiv.style.display = 'block';
       setStatus("💾 Track guardado detectado");
+      playDiv.style.display = 'block';
     } else {
       setStatus("💡 Listo para escanear");
     }
