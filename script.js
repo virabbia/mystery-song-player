@@ -1,4 +1,4 @@
-const VERSION = 'v2.8-final';
+const VERSION = 'v2.9-final';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -103,11 +103,12 @@ function onScanSuccess(decoded) {
 function initScanner() {
   setStatus('📷 Iniciando cámara...');
   html5QrCode = new Html5Qrcode('qr-reader');
+
   Html5Qrcode.getCameras().then(cams => {
-    const backCam = cams.find(cam =>
-      /back|rear|environment/i.test(cam.label) || cam.label.toLowerCase().includes("1x")
+    const backCams = cams.filter(cam =>
+      /back|rear|environment|1x/i.test(cam.label) && !/0\.5|ultra/i.test(cam.label)
     );
-    const selectedCam = backCam || cams[0];
+    const selectedCam = backCams[0] || cams[0];
     return html5QrCode.start(
       { deviceId: { exact: selectedCam.id } },
       { fps: 10 },
@@ -127,18 +128,17 @@ window.addEventListener('load', () => {
   if (trackParam && hashOk) {
     lastTrackUri = trackParam;
     saveTrackId(lastTrackUri);
-    playTrack();
+    playTrack(); // ✅ reproducción automática al cargar con ?track=
   } else {
     const storedUri = localStorage.getItem('lastTrackUri');
     if (storedUri) {
       lastTrackUri = storedUri;
       playDiv.style.display = 'block';
+      setStatus("💾 Track guardado detectado");
+    } else {
+      setStatus("💡 Listo para escanear");
     }
   }
-
-  // iniciar escáner al cargar
-  scannerDiv.style.display = 'block';
-  initScanner();
 });
 
 playBtn.addEventListener('click', playTrack);
@@ -163,5 +163,5 @@ scanAgainBtn.addEventListener('click', () => {
   timerEl.style.display = 'none';
   scannerDiv.style.display = 'block';
   setStatus('🔁 Listo para escanear otra canción');
-  initScanner();
+  initScanner(); // ✅ se abre solo cuando lo pide el usuario
 });
