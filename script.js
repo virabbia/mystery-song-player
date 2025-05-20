@@ -1,4 +1,4 @@
-const VERSION = 'v3.1-trackfix';
+const VERSION = 'v3.2-controls';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -12,6 +12,8 @@ const scanAgainBtn   = document.getElementById('scan-again');
 const timerEl        = document.getElementById('timer');
 
 let html5QrCode, lastTrackUri;
+let isPlaying = false;
+let timerTimeout, timerInterval;
 const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
 function setStatus(msg) {
@@ -27,7 +29,6 @@ function saveTrackId(uri) {
 }
 
 async function playTrack() {
-  setStatus(`🟨 Intentando reproducir: ${lastTrackUri}`);
   const token = localStorage.getItem('spotifyAccessToken');
   if (!token || !location.hash.includes('#authenticated')) {
     setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
@@ -40,6 +41,7 @@ async function playTrack() {
   }
 
   try {
+    setStatus(`📡 Buscando dispositivos…`);
     const devRes = await fetch('https://api.spotify.com/v1/me/player/devices', {
       headers: { Authorization: 'Bearer ' + token }
     });
@@ -60,27 +62,34 @@ async function playTrack() {
       }
     );
     if (!playRes.ok) throw new Error(await playRes.text());
+
+    isPlaying = true;
+    playBtn.textContent = "⏸ Pausar";
     setStatus('🎉 ¡Reproducción iniciada!');
     playDiv.style.display = 'block';
     againDiv.style.display = 'block';
     openSpotifyBtn.style.display = 'none';
 
-    // Mostrar y actualizar contador
+    // Timer visual 45s
+    clearTimeout(timerTimeout);
+    clearInterval(timerInterval);
     timerEl.style.display = 'block';
     let secondsLeft = 45;
     timerEl.textContent = `⏱ ${secondsLeft}s`;
-    const interval = setInterval(() => {
+
+    timerInterval = setInterval(() => {
       secondsLeft--;
       timerEl.textContent = `⏱ ${secondsLeft}s`;
-      if (secondsLeft <= 0) clearInterval(interval);
+      if (secondsLeft <= 0) clearInterval(timerInterval);
     }, 1000);
 
-    // Detener canción después de 45 segundos
-    setTimeout(async () => {
+    timerTimeout = setTimeout(async () => {
       await fetch("https://api.spotify.com/v1/me/player/pause", {
         method: "PUT",
         headers: { Authorization: "Bearer " + token },
       });
+      isPlaying = false;
+      playBtn.textContent = "▶ Reproducir";
       timerEl.style.display = 'none';
       setStatus("⏱ Canción pausada tras 45s");
     }, 45000);
@@ -125,9 +134,9 @@ window.addEventListener('load', () => {
 
   if (trackParam) {
     lastTrackUri = trackParam;
-    saveTrackId(lastTrackUri); // 💾 SIEMPRE guardar si viene desde QR
+    saveTrackId(lastTrackUri);
     if (hashOk) {
-      playTrack(); // ▶️ Reproducir de inmediato si ya está autenticado
+      playTrack();
     } else {
       setStatus("🎶 Canción escaneada, esperando autenticación");
       playDiv.style.display = 'block';
@@ -144,16 +153,45 @@ window.addEventListener('load', () => {
   }
 });
 
-playBtn.addEventListener('click', playTrack);
+playBtn.addEventListener('click', async () => {
+  const token = localStorage.getItem("spotifyAccessToken");
+  if (!token) return alert("No hay token");
+
+  if (isPlaying) {
+    await fetch("https://api.spotify.com/v1/me/player/pause", {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token }
+    });
+    isPlaying = false;
+    playBtn.textContent = "▶ Reproducir";
+    setStatus("⏸ Canción pausada");
+  } else {
+    await playTrack();
+  }
+});
 
 skipBtn.addEventListener('click', async () => {
   const token = localStorage.getItem("spotifyAccessToken");
   if (!token) return alert("No hay token");
-  await fetch("https://api.spotify.com/v1/me/player/seek?position_ms=15000", {
-    method: "PUT",
-    headers: { Authorization: "Bearer " + token }
-  });
-  setStatus("⏩ Adelantado 15s");
+
+  try {
+    const res = await fetch("https://api.spotify.com/v1/me/player", {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const json = await res.json();
+    const current = json.progress_ms || 0;
+    const newPos = current + 15000;
+
+    await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${newPos}`, {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token }
+    });
+
+    setStatus(`⏩ Adelantado a ${Math.floor(newPos / 1000)}s`);
+  } catch (e) {
+    console.error(e);
+    setStatus("❌ Error al adelantar");
+  }
 });
 
 openSpotifyBtn.addEventListener('click', () => {
@@ -164,7 +202,9 @@ scanAgainBtn.addEventListener('click', () => {
   againDiv.style.display = 'none';
   playDiv.style.display = 'none';
   timerEl.style.display = 'none';
+  html5QrCode?.clear();
   scannerDiv.style.display = 'block';
   setStatus('🔁 Listo para escanear otra canción');
   initScanner();
 });
+
