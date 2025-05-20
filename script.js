@@ -1,4 +1,4 @@
-const VERSION = 'v2.9-final';
+const VERSION = 'v3.0-camfix';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -104,17 +104,11 @@ function initScanner() {
   setStatus('📷 Iniciando cámara...');
   html5QrCode = new Html5Qrcode('qr-reader');
 
-  Html5Qrcode.getCameras().then(cams => {
-    const backCams = cams.filter(cam =>
-      /back|rear|environment|1x/i.test(cam.label) && !/0\.5|ultra/i.test(cam.label)
-    );
-    const selectedCam = backCams[0] || cams[0];
-    return html5QrCode.start(
-      { deviceId: { exact: selectedCam.id } },
-      { fps: 10 },
-      onScanSuccess
-    );
-  }).catch(err => {
+  html5QrCode.start(
+    { facingMode: "environment" }, // ✅ modo seguro
+    { fps: 10 },
+    onScanSuccess
+  ).catch(err => {
     setStatus(`❌ Error cámara: ${err.message}`);
     alert(`No pude acceder a la cámara:\n${err.message}`);
   });
@@ -128,7 +122,7 @@ window.addEventListener('load', () => {
   if (trackParam && hashOk) {
     lastTrackUri = trackParam;
     saveTrackId(lastTrackUri);
-    playTrack(); // ✅ reproducción automática al cargar con ?track=
+    playTrack(); // ✅ reproducción automática
   } else {
     const storedUri = localStorage.getItem('lastTrackUri');
     if (storedUri) {
@@ -163,5 +157,5 @@ scanAgainBtn.addEventListener('click', () => {
   timerEl.style.display = 'none';
   scannerDiv.style.display = 'block';
   setStatus('🔁 Listo para escanear otra canción');
-  initScanner(); // ✅ se abre solo cuando lo pide el usuario
+  initScanner();
 });
