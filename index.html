@@ -49,7 +49,7 @@
       margin: 20px 0;
     }
 
-    button, #start-button {
+    button {
       background: #ffffffcc;
       border: none;
       color: #ff3c92;
@@ -63,7 +63,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
-    button:hover, #start-button:hover {
+    button:hover {
       background-color: #ffe4f2;
       transform: scale(1.05);
     }
@@ -80,6 +80,12 @@
       background: white;
       border-radius: 12px;
       padding: 10px;
+    }
+
+    #timer {
+      font-size: 2.5rem;
+      margin-top: 20px;
+      display: none;
     }
 
     .viki-dancer {
@@ -101,13 +107,11 @@
 </head>
 <body>
 
-  <div id="version-tag">v2.7-playfix</div>
+  <div id="version-tag">v2.8-final</div>
 
   <h1>🎧 Vikster</h1>
   <h2>Adivina la canción sin verla — ¡con ritmo y estilo!</h2>
   <p id="status">💡 Listo para escanear</p>
-
-  <div id="start-button">📸 Escanear canción</div>
 
   <div id="scanner-container">
     <div id="qr-reader"></div>
@@ -120,8 +124,10 @@
   </div>
 
   <div id="again-container">
-    <button id="scan-again">🔁 Escanear otra</button>
+    <button id="scan-again">🔁 Escanear otra canción</button>
   </div>
+
+  <div id="timer">⏱ 45s</div>
 
   <!-- Viki bailarina -->
   <img src="vikibailarina.png" alt="Viki bailando" class="viki-dancer">
