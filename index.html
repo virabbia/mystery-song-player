@@ -49,7 +49,7 @@
       margin: 20px 0;
     }
 
-    button, #start-button, #skip-button, #open-spotify-button {
+    button, #start-button {
       background: #ffffffcc;
       border: none;
       color: #ff3c92;
@@ -63,7 +63,25 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
-    button:hover, #start-button:hover,
+    button:hover, #start-button:hover {
+      background-color: #ffe4f2;
+      transform: scale(1.05);
+    }
+
+    #skip-button, #open-spotify-button {
+      background: #ffffffcc;
+      border: none;
+      color: #ff3c92;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      margin: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
     #skip-button:hover, #open-spotify-button:hover {
       background-color: #ffe4f2;
       transform: scale(1.05);
