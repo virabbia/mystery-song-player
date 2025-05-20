@@ -1,8 +1,7 @@
-const VERSION = 'v2.7-playfix';
+const VERSION = 'v2.8-final';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
-const startBtn       = document.getElementById('start-button');
 const scannerDiv     = document.getElementById('scanner-container');
 const playDiv        = document.getElementById('play-container');
 const againDiv       = document.getElementById('again-container');
@@ -10,9 +9,9 @@ const playBtn        = document.getElementById('play-button');
 const skipBtn        = document.getElementById('skip-button');
 const openSpotifyBtn = document.getElementById('open-spotify-button');
 const scanAgainBtn   = document.getElementById('scan-again');
+const timerEl        = document.getElementById('timer');
 
 let html5QrCode, lastTrackUri;
-
 const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
 function setStatus(msg) {
@@ -24,7 +23,6 @@ function saveTrackId(uri) {
   const id = uri.split(':').pop();
   localStorage.setItem('lastTrackUri', uri);
   localStorage.setItem('trackId', id);
-  console.log(`[${VERSION}] 💾 Track guardado: ${uri}`);
 }
 
 async function playTrack() {
@@ -32,8 +30,7 @@ async function playTrack() {
   const token = localStorage.getItem('spotifyAccessToken');
   if (!token || !location.hash.includes('#authenticated')) {
     setStatus('🔑 Token ausente o no autenticado, redirigiendo…');
-    localStorage.setItem('lastTrackUri', lastTrackUri);
-    localStorage.setItem('trackId', lastTrackUri.split(':').pop());
+    saveTrackId(lastTrackUri);
     return window.location.href =
       `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -42,7 +39,6 @@ async function playTrack() {
   }
 
   try {
-    setStatus('📡 Solicitando dispositivos Spotify...');
     const devRes = await fetch('https://api.spotify.com/v1/me/player/devices', {
       headers: { Authorization: 'Bearer ' + token }
     });
@@ -54,7 +50,6 @@ async function playTrack() {
     }
 
     const deviceId = devJson.devices[0].id;
-    setStatus(`▶ Reproduciendo en device_id: ${deviceId}`);
     const playRes = await fetch(
       `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
       {
@@ -69,11 +64,23 @@ async function playTrack() {
     againDiv.style.display = 'block';
     openSpotifyBtn.style.display = 'none';
 
+    // Mostrar y actualizar contador
+    timerEl.style.display = 'block';
+    let secondsLeft = 45;
+    timerEl.textContent = `⏱ ${secondsLeft}s`;
+    const interval = setInterval(() => {
+      secondsLeft--;
+      timerEl.textContent = `⏱ ${secondsLeft}s`;
+      if (secondsLeft <= 0) clearInterval(interval);
+    }, 1000);
+
+    // Detener canción después de 45 segundos
     setTimeout(async () => {
       await fetch("https://api.spotify.com/v1/me/player/pause", {
         method: "PUT",
         headers: { Authorization: "Bearer " + token },
       });
+      timerEl.style.display = 'none';
       setStatus("⏱ Canción pausada tras 45s");
     }, 45000);
   } catch (e) {
@@ -83,28 +90,29 @@ async function playTrack() {
 
 function onScanSuccess(decoded) {
   setStatus(`✅ QR detectado: ${decoded}`);
-  html5QrCode.stop()
-    .then(() => html5QrCode.clear())
-    .then(() => {
-      const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
-      if (!m) {
-        setStatus('❌ QR inválido para Spotify');
-        return alert('QR inválido para Spotify');
-      }
-      lastTrackUri = `spotify:track:${m[1]}`;
-      saveTrackId(lastTrackUri);
-      scannerDiv.style.display = 'none';
-      playTrack();
-    });
+  html5QrCode.stop().then(() => html5QrCode.clear()).then(() => {
+    const m = decoded.match(/(?:spotify:track:|open\.spotify\.com\/track\/)([A-Za-z0-9]+)/);
+    if (!m) return alert('QR inválido para Spotify');
+    lastTrackUri = `spotify:track:${m[1]}`;
+    saveTrackId(lastTrackUri);
+    scannerDiv.style.display = 'none';
+    playTrack();
+  });
 }
 
 function initScanner() {
-  setStatus('📷 Solicitando acceso a cámara…');
+  setStatus('📷 Iniciando cámara...');
   html5QrCode = new Html5Qrcode('qr-reader');
   Html5Qrcode.getCameras().then(cams => {
-    const filtered = cams.filter(cam => !/0\.5|ultra|wide/i.test(cam.label));
-    const camId = (filtered[0] || cams[0]).id;
-    return html5QrCode.start({ deviceId: { exact: camId } }, { fps: 10 }, onScanSuccess);
+    const backCam = cams.find(cam =>
+      /back|rear|environment/i.test(cam.label) || cam.label.toLowerCase().includes("1x")
+    );
+    const selectedCam = backCam || cams[0];
+    return html5QrCode.start(
+      { deviceId: { exact: selectedCam.id } },
+      { fps: 10 },
+      onScanSuccess
+    );
   }).catch(err => {
     setStatus(`❌ Error cámara: ${err.message}`);
     alert(`No pude acceder a la cámara:\n${err.message}`);
@@ -115,6 +123,7 @@ window.addEventListener('load', () => {
   const params = new URLSearchParams(location.search);
   const trackParam = params.get('track');
   const hashOk = location.hash.includes('#authenticated');
+
   if (trackParam && hashOk) {
     lastTrackUri = trackParam;
     saveTrackId(lastTrackUri);
@@ -126,12 +135,8 @@ window.addEventListener('load', () => {
       playDiv.style.display = 'block';
     }
   }
-});
 
-startBtn.addEventListener('click', () => {
-  startBtn.style.display = 'none';
-  playDiv.style.display = 'none';
-  againDiv.style.display = 'none';
+  // iniciar escáner al cargar
   scannerDiv.style.display = 'block';
   initScanner();
 });
@@ -154,5 +159,9 @@ openSpotifyBtn.addEventListener('click', () => {
 
 scanAgainBtn.addEventListener('click', () => {
   againDiv.style.display = 'none';
-  startBtn.style.display = 'block';
+  playDiv.style.display = 'none';
+  timerEl.style.display = 'none';
+  scannerDiv.style.display = 'block';
+  setStatus('🔁 Listo para escanear otra canción');
+  initScanner();
 });
