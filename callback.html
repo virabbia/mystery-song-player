@@ -1,35 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Autenticación Spotify</title>
+  <meta charset="UTF-8">
+  <title>Autenticación Spotify</title>
 </head>
 <body>
-    <p>Autenticando con Spotify...</p>
-    <script>
-        console.log("🔑 Procesando autenticación...");
+  <p>Autenticando con Spotify...</p>
+  <script>
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.substring(1));
+    const accessToken = params.get("access_token");
 
-        const hash = window.location.hash;
-        const params = new URLSearchParams(hash.substring(1));
-        const accessToken = params.get("access_token");
-
-        if (accessToken) {
-            localStorage.setItem("spotifyAccessToken", accessToken);
-
-            // Check if there's a stored track ID
-            const trackId = localStorage.getItem("trackId");
-
-            if (trackId) {
-                console.log("🎶 Track ID recuperado después de autenticación:", trackId);
-                // Redirect to main page WITHOUT redirecting again
-                window.location.href = `https://virabbia.github.io/mystery-song-player/?track=spotify:track:${trackId}#authenticated`;
-            } else {
-                console.log("⚠️ No hay track ID guardado. Redirigiendo sin track...");
-                window.location.href = "https://virabbia.github.io/mystery-song-player/#authenticated";
-            }
-        } else {
-            document.body.innerHTML = "<p>Error al autenticar con Spotify.</p>";
-        }
-    </script>
+    if (accessToken) {
+      localStorage.setItem("spotifyAccessToken", accessToken);
+      const trackId = localStorage.getItem("trackId");
+      if (trackId) {
+        window.location.href = `https://virabbia.github.io/mystery-song-player/?track=spotify:track:${trackId}#authenticated`;
+      } else {
+        window.location.href = "https://virabbia.github.io/mystery-song-player/#authenticated";
+      }
+    } else {
+      document.body.innerHTML = "<p>Error al autenticar con Spotify.</p>";
+    }
+  </script>
 </body>
 </html>
