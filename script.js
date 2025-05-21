@@ -1,4 +1,4 @@
-const VERSION = 'v3.6-timerfix';
+const VERSION = 'v3.6-timerfixs';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
