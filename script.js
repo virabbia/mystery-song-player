@@ -1,4 +1,4 @@
-const VERSION = 'v3.2-controls';
+const VERSION = 'v3.3-polish';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -70,7 +70,6 @@ async function playTrack() {
     againDiv.style.display = 'block';
     openSpotifyBtn.style.display = 'none';
 
-    // Timer visual 45s
     clearTimeout(timerTimeout);
     clearInterval(timerInterval);
     timerEl.style.display = 'block';
@@ -111,16 +110,30 @@ function onScanSuccess(decoded) {
 }
 
 function initScanner() {
-  setStatus('📷 Iniciando cámara...');
+  setStatus('📷 Buscando cámara trasera estándar...');
   html5QrCode = new Html5Qrcode('qr-reader');
 
-  html5QrCode.start(
-    { facingMode: "environment" },
-    { fps: 10 },
-    onScanSuccess
-  ).catch(err => {
-    setStatus(`❌ Error cámara: ${err.message}`);
-    alert(`No pude acceder a la cámara:\n${err.message}`);
+  Html5Qrcode.getCameras().then(cams => {
+    const cam1x = cams.find(cam =>
+      /back|environment/i.test(cam.label) && /1x/i.test(cam.label)
+    );
+    const fallback = cams.find(cam => /back|environment/i.test(cam.label)) || cams[0];
+    const selectedCam = cam1x || fallback;
+
+    if (!selectedCam) {
+      setStatus("❌ No se encontró cámara trasera válida");
+      alert("No encontré cámara trasera");
+      return;
+    }
+
+    html5QrCode.start(
+      { deviceId: { exact: selectedCam.id } },
+      { fps: 10 },
+      onScanSuccess
+    ).catch(err => {
+      setStatus(`❌ Error al iniciar cámara: ${err.message}`);
+      alert(`No pude acceder a la cámara:\n${err.message}`);
+    });
   });
 }
 
@@ -166,7 +179,13 @@ playBtn.addEventListener('click', async () => {
     playBtn.textContent = "▶ Reproducir";
     setStatus("⏸ Canción pausada");
   } else {
-    await playTrack();
+    await fetch("https://api.spotify.com/v1/me/player/play", {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token }
+    });
+    isPlaying = true;
+    playBtn.textContent = "⏸ Pausar";
+    setStatus("▶️ Reanudado");
   }
 });
 
@@ -207,4 +226,3 @@ scanAgainBtn.addEventListener('click', () => {
   setStatus('🔁 Listo para escanear otra canción');
   initScanner();
 });
-
