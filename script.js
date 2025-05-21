@@ -47,12 +47,12 @@ async function playTrack() {
       headers: { Authorization: 'Bearer ' + token }
     });
     const devJson = await devRes.json();
-    if (!devJson.devices?.length) {
-      setStatus('❌ No hay dispositivos activos');
-      openSpotifyBtn.style.display = 'inline-block';
-      alert("Abre la app de Spotify en este dispositivo, luego vuelve aquí para continuar.");
-      return;
-    }
+  if (!devJson.devices?.length) {
+  setStatus('❗ Necesitamos que Spotify esté activo en este dispositivo');
+  openSpotifyBtn.style.display = 'inline-block';
+  alert("💡 Abre la app de Spotify en tu teléfono y reprodúcela (aunque sea en pausa). Luego vuelve aquí y presiona 'Reproducir canción'.");
+  return;
+}
 
     const deviceId = devJson.devices[0].id;
     const playRes = await fetch(
