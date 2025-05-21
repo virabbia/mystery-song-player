@@ -1,4 +1,4 @@
-const VERSION = 'v3.3-polish';
+const VERSION = 'v3.4-fixplay';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -13,7 +13,9 @@ const timerEl        = document.getElementById('timer');
 
 let html5QrCode, lastTrackUri;
 let isPlaying = false;
-let timerTimeout, timerInterval;
+let timerTimeout = null;
+let timerInterval = null;
+
 const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
 function setStatus(msg) {
@@ -25,7 +27,6 @@ function saveTrackId(uri) {
   const id = uri.split(':').pop();
   localStorage.setItem('lastTrackUri', uri);
   localStorage.setItem('trackId', id);
-  console.log(`[${VERSION}] 💾 Guardado: ${uri}`);
 }
 
 async function playTrack() {
@@ -41,7 +42,7 @@ async function playTrack() {
   }
 
   try {
-    setStatus(`📡 Buscando dispositivos…`);
+    setStatus('📡 Buscando dispositivos…');
     const devRes = await fetch('https://api.spotify.com/v1/me/player/devices', {
       headers: { Authorization: 'Bearer ' + token }
     });
@@ -90,6 +91,7 @@ async function playTrack() {
       isPlaying = false;
       playBtn.textContent = "▶ Reproducir";
       timerEl.style.display = 'none';
+      againDiv.style.display = 'block'; // ✅ mostrar al terminar
       setStatus("⏱ Canción pausada tras 45s");
     }, 45000);
   } catch (e) {
@@ -142,9 +144,6 @@ window.addEventListener('load', () => {
   const trackParam = params.get('track');
   const hashOk = location.hash.includes('#authenticated');
 
-  console.log(`[${VERSION}] 🔍 trackParam: ${trackParam}`);
-  console.log(`[${VERSION}] 🔍 hash incluye #authenticated? ${hashOk}`);
-
   if (trackParam) {
     lastTrackUri = trackParam;
     saveTrackId(lastTrackUri);
@@ -169,6 +168,11 @@ window.addEventListener('load', () => {
 playBtn.addEventListener('click', async () => {
   const token = localStorage.getItem("spotifyAccessToken");
   if (!token) return alert("No hay token");
+
+  if (!isPlaying && !timerTimeout) {
+    await playTrack(); // primera vez
+    return;
+  }
 
   if (isPlaying) {
     await fetch("https://api.spotify.com/v1/me/player/pause", {
@@ -226,3 +230,4 @@ scanAgainBtn.addEventListener('click', () => {
   setStatus('🔁 Listo para escanear otra canción');
   initScanner();
 });
+
