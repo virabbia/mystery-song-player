@@ -1,4 +1,4 @@
-const VERSION = 'v3.5-authfix';
+const VERSION = 'v3.6-timerfix';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -15,6 +15,7 @@ let html5QrCode, lastTrackUri;
 let isPlaying = false;
 let timerTimeout = null;
 let timerInterval = null;
+let secondsLeft = 45;
 
 const redirectUri = `${location.origin}${location.pathname}callback.html`;
 
@@ -47,12 +48,12 @@ async function playTrack() {
       headers: { Authorization: 'Bearer ' + token }
     });
     const devJson = await devRes.json();
-  if (!devJson.devices?.length) {
-  setStatus('❗ Necesitamos que Spotify esté activo en este dispositivo');
-  openSpotifyBtn.style.display = 'inline-block';
-  alert("💡 Abre la app de Spotify en tu teléfono y reprodúcela (aunque sea en pausa). Luego vuelve aquí y presiona 'Reproducir canción'.");
-  return;
-}
+    if (!devJson.devices?.length) {
+      setStatus('❗ Necesitamos que Spotify esté activo en este dispositivo');
+      openSpotifyBtn.style.display = 'inline-block';
+      alert("Para escuchar la canción, toca el botón para activar Spotify en segundo plano. No verás el nombre de la canción.");
+      return;
+    }
 
     const deviceId = devJson.devices[0].id;
     const playRes = await fetch(
@@ -72,29 +73,30 @@ async function playTrack() {
     againDiv.style.display = 'block';
     openSpotifyBtn.style.display = 'none';
 
-    clearTimeout(timerTimeout);
-    clearInterval(timerInterval);
-    timerEl.style.display = 'block';
-    let secondsLeft = 45;
-    timerEl.textContent = `⏱ ${secondsLeft}s`;
-
-    timerInterval = setInterval(() => {
-      secondsLeft--;
+    // Iniciar temporizador si aún no está corriendo
+    if (!timerInterval) {
+      timerEl.style.display = 'block';
       timerEl.textContent = `⏱ ${secondsLeft}s`;
-      if (secondsLeft <= 0) clearInterval(timerInterval);
-    }, 1000);
 
-    timerTimeout = setTimeout(async () => {
-      await fetch("https://api.spotify.com/v1/me/player/pause", {
-        method: "PUT",
-        headers: { Authorization: "Bearer " + token },
-      });
-      isPlaying = false;
-      playBtn.textContent = "▶ Reproducir";
-      timerEl.style.display = 'none';
-      againDiv.style.display = 'block';
-      setStatus("⏱ Canción pausada tras 45s");
-    }, 45000);
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+        timerEl.textContent = `⏱ ${secondsLeft}s`;
+        if (secondsLeft <= 0) clearInterval(timerInterval);
+      }, 1000);
+
+      timerTimeout = setTimeout(async () => {
+        await fetch("https://api.spotify.com/v1/me/player/pause", {
+          method: "PUT",
+          headers: { Authorization: "Bearer " + token },
+        });
+        isPlaying = false;
+        playBtn.textContent = "▶ Reproducir";
+        timerEl.style.display = 'none';
+        againDiv.style.display = 'block';
+        setStatus("⏱ Canción pausada tras 45s");
+      }, secondsLeft * 1000);
+    }
+
   } catch (e) {
     setStatus(`❌ Error al reproducir: ${e.message}`);
   }
@@ -192,6 +194,11 @@ playBtn.addEventListener('click', async () => {
     isPlaying = false;
     playBtn.textContent = "▶ Reproducir";
     setStatus("⏸ Canción pausada");
+
+    clearInterval(timerInterval);
+    clearTimeout(timerTimeout);
+    timerInterval = null;
+    timerTimeout = null;
   } else {
     await fetch("https://api.spotify.com/v1/me/player/play", {
       method: "PUT",
@@ -200,6 +207,27 @@ playBtn.addEventListener('click', async () => {
     isPlaying = true;
     playBtn.textContent = "⏸ Pausar";
     setStatus("▶️ Reanudado");
+
+    timerEl.style.display = 'block';
+    timerEl.textContent = `⏱ ${secondsLeft}s`;
+
+    timerInterval = setInterval(() => {
+      secondsLeft--;
+      timerEl.textContent = `⏱ ${secondsLeft}s`;
+      if (secondsLeft <= 0) clearInterval(timerInterval);
+    }, 1000);
+
+    timerTimeout = setTimeout(async () => {
+      await fetch("https://api.spotify.com/v1/me/player/pause", {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + token }
+      });
+      isPlaying = false;
+      playBtn.textContent = "▶ Reproducir";
+      timerEl.style.display = 'none';
+      againDiv.style.display = 'block';
+      setStatus("⏱ Canción pausada tras 45s");
+    }, secondsLeft * 1000);
   }
 });
 
@@ -235,6 +263,11 @@ scanAgainBtn.addEventListener('click', () => {
   againDiv.style.display = 'none';
   playDiv.style.display = 'none';
   timerEl.style.display = 'none';
+  secondsLeft = 45;
+  clearTimeout(timerTimeout);
+  clearInterval(timerInterval);
+  timerTimeout = null;
+  timerInterval = null;
   html5QrCode?.clear();
   scannerDiv.style.display = 'block';
   setStatus('🔁 Listo para escanear otra canción');
