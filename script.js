@@ -49,11 +49,12 @@ async function playTrack() {
     });
     const devJson = await devRes.json();
     if (!devJson.devices?.length) {
-      setStatus('❗ Necesitamos que Spotify esté activo en este dispositivo');
-      openSpotifyBtn.style.display = 'inline-block';
-      alert("Para escuchar la canción, toca el botón para activar Spotify en segundo plano. No verás el nombre de la canción.");
-      return;
-    }
+  setStatus('❗ Necesitamos que Spotify esté activo en este dispositivo');
+  openSpotifyBtn.style.display = 'inline-block';
+  document.getElementById('spotify-instructions').style.display = 'block';
+  alert("Para escuchar la canción, toca el botón para activar Spotify en segundo plano. No verás el nombre de la canción.");
+  return;
+}
 
     const deviceId = devJson.devices[0].id;
     const playRes = await fetch(
