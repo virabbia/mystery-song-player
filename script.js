@@ -1,4 +1,4 @@
-const VERSION = 'v3.4-fixplay';
+const VERSION = 'v3.5-authfix';
 const CLIENT_ID = '0e507d976bac454da727e5da965c22fb';
 
 const statusEl       = document.getElementById('status');
@@ -50,6 +50,7 @@ async function playTrack() {
     if (!devJson.devices?.length) {
       setStatus('❌ No hay dispositivos activos');
       openSpotifyBtn.style.display = 'inline-block';
+      alert("Abre la app de Spotify en este dispositivo, luego vuelve aquí para continuar.");
       return;
     }
 
@@ -91,7 +92,7 @@ async function playTrack() {
       isPlaying = false;
       playBtn.textContent = "▶ Reproducir";
       timerEl.style.display = 'none';
-      againDiv.style.display = 'block'; // ✅ mostrar al terminar
+      againDiv.style.display = 'block';
       setStatus("⏱ Canción pausada tras 45s");
     }, 45000);
   } catch (e) {
@@ -167,7 +168,16 @@ window.addEventListener('load', () => {
 
 playBtn.addEventListener('click', async () => {
   const token = localStorage.getItem("spotifyAccessToken");
-  if (!token) return alert("No hay token");
+
+  if (!token || !location.hash.includes('#authenticated')) {
+    setStatus('🔑 Redirigiendo a Spotify para autenticación…');
+    saveTrackId(lastTrackUri);
+    return window.location.href =
+      `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&scope=user-modify-playback-state%20user-read-playback-state` +
+      `&response_type=token`;
+  }
 
   if (!isPlaying && !timerTimeout) {
     await playTrack(); // primera vez
@@ -230,4 +240,3 @@ scanAgainBtn.addEventListener('click', () => {
   setStatus('🔁 Listo para escanear otra canción');
   initScanner();
 });
-
