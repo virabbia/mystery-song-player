@@ -50,25 +50,24 @@
     }
 
     button {
-  background: linear-gradient(to right, #fff, #ffe6f0);
-  border: 2px solid #ff4d94;
-  color: #ff3c92;
-  padding: 14px 30px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  margin: 10px;
-  transition: all 0.25s ease;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-}
+      background: linear-gradient(to right, #fff, #ffe6f0);
+      border: 2px solid #ff4d94;
+      color: #ff3c92;
+      padding: 14px 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
 
-button:hover {
-  background: #fff0f8;
-  transform: scale(1.08);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.25);
-}
-
+    button:hover {
+      background: #fff0f8;
+      transform: scale(1.08);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+    }
 
     #scanner-container, #play-container, #again-container {
       display: none;
@@ -105,17 +104,21 @@ button:hover {
       50% { transform: scaleX(-1); }
       100% { transform: scaleX(1); }
     }
+
+    #spotify-instructions {
+      font-size: 1.1rem;
+      margin-top: 20px;
+      display: none;
+      color: #fff6fb;
+    }
   </style>
 </head>
 <body>
 
-  <script>
-  document.getElementById('version-tag').textContent = window.VERSION;
-</script>
-
+  <div id="version-tag">v3.6-timerfix</div>
 
   <h1>🎧 Vikster</h1>
-  <h2>Shake your booty </h2>
+  <h2>Shake your booty</h2>
   <p id="status">💡 Listo para escanear</p>
 
   <div id="scanner-container">
@@ -125,7 +128,8 @@ button:hover {
   <div id="play-container">
     <button id="play-button">▶ Reproducir canción</button>
     <button id="skip-button">⏩ Adelantar 15s</button>
-    <button id="open-spotify-button">📲 Abrir Spotify</button>
+    <button id="open-spotify-button" style="display: none;">📲 Abrir Spotify</button>
+    <p id="spotify-instructions">Toca el botón para activar Spotify en segundo plano. No verás el nombre de la canción.</p>
   </div>
 
   <div id="again-container">
